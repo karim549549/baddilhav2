@@ -1,6 +1,6 @@
 import { IsString, IsOptional, IsEmail, IsPhoneNumber, IsEnum, IsArray, IsBoolean, IsDateString, IsNumber, Min, Max } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { UserVerificationStatus, OAuthProvider } from '../../../generated/prisma';
+import { UserVerificationStatus, OAuthProvider } from '@prisma/client';
 import { Role } from '@prisma/client';
 
 export class CreateUserDto {

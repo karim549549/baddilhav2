@@ -1,6 +1,6 @@
 import { IsString, IsOptional, IsEnum, IsEmail, IsPhoneNumber } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { OAuthProvider } from '../../../generated/prisma';
+import { OAuthProvider } from '@prisma/client';
 
 export class RegisterUserDto {
   @ApiProperty({ description: 'Username for the user', example: 'gamer123' })
