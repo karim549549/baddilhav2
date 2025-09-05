@@ -1,0 +1,504 @@
+// This is your Prisma schema file for Baddilha - Item Swapping App
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ========================================
+// ENUMS
+// ========================================
+
+enum ItemCategory {
+  GAMING
+  ELECTRONICS
+  COLLECTIBLES
+  ACCESSORIES
+  BOOKS
+  CLOTHING
+  SPORTS
+  OTHER
+}
+
+enum ItemCondition {
+  NEW
+  LIKE_NEW
+  EXCELLENT
+  GOOD
+  FAIR
+  POOR
+}
+
+enum SwipeDirection {
+  LEFT // Pass/Nope
+  RIGHT // Like/Want to swap
+  UP // Super Like
+  DOWN // Dislike/Block
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  LOCATION
+  SYSTEM
+}
+
+enum MatchStatus {
+  PENDING
+  MATCHED
+  REJECTED
+  EXPIRED
+}
+
+enum UserVerificationStatus {
+  UNVERIFIED
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum OAuthProvider {
+  GOOGLE
+  DISCORD
+  APPLE
+  PHONE
+}
+
+enum NotificationType {
+  MATCH
+  MESSAGE
+  NEW_ITEM
+  SYSTEM
+}
+
+enum Role {
+  USER
+  MODERATOR
+  ADMIN
+  SUPER_ADMIN
+}
+
+// ========================================
+// USER MODELS
+// ========================================
+
+model User {
+  id                 String                 @id @default(cuid())
+  username           String                 @unique
+  email              String?                @unique
+  displayName        String
+  phone              String?                @unique
+  avatar             String?
+  isPhoneVerified    Boolean                @default(false)
+  verificationStatus UserVerificationStatus @default(UNVERIFIED)
+  role               Role                   @default(USER)
+
+  // Location & Preferences
+  location    Location?
+  maxDistance Float     @default(50.0) // in kilometers
+
+  // Profile & Stats
+  bio         String?
+  totalItems  Int      @default(0)
+  memberSince DateTime @default(now())
+  lastActive  DateTime @default(now())
+
+  // Settings
+  preferences UserPreferences?
+  settings    UserSettings?
+
+  // OAuth Accounts
+  oauthAccounts OAuthAccount[] // Google, Discord, Apple, Phone
+
+  // Items & Swiping
+  items  Item[]
+  swipes SwipeAction[]
+
+  // Matches & Chats
+  matchesAsUser1   Match[]       @relation("User1Matches")
+  matchesAsUser2   Match[]       @relation("User2Matches")
+  sentMessages     ChatMessage[] @relation("MessageSender")
+  receivedMessages ChatMessage[] @relation("MessageReceiver")
+
+  // Notifications
+  notifications Notification[]
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([phone])
+  @@index([lastActive])
+  @@index([role])
+  @@map("users")
+}
+
+model OAuthAccount {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // OAuth provider details
+  provider          OAuthProvider // google, discord, apple, phone
+  providerAccountId String // ID from the OAuth provider
+  accessToken       String? // OAuth access token
+  refreshToken      String? // OAuth refresh token
+  expiresAt         DateTime? // Token expiration
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+  @@index([provider])
+  @@map("oauth_accounts")
+}
+
+model Location {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Coordinates
+  latitude  Float
+  longitude Float
+
+  // Address
+  city       String
+  country    String
+  state      String?
+  postalCode String?
+  address    String?
+
+  // Metadata
+  isPublic  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([latitude, longitude])
+  @@index([city, country])
+  @@map("locations")
+}
+
+model UserPreferences {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Categories of interest
+  categories ItemCategory[]
+
+  // Games of interest (for matching algorithm)
+  gamesInterestedIn String[] // Specific game names from external API
+
+  // Distance & Condition preferences
+  minCondition ItemCondition @default(GOOD)
+
+  // Age range (if relevant for community)
+  minAge Int?
+  maxAge Int?
+
+  // Notification preferences
+  notifications NotificationPreferences?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("user_preferences")
+}
+
+model NotificationPreferences {
+  id            String          @id @default(cuid())
+  preferencesId String          @unique
+  preferences   UserPreferences @relation(fields: [preferencesId], references: [id], onDelete: Cascade)
+
+  matches  Boolean @default(true)
+  messages Boolean @default(true)
+  system   Boolean @default(true)
+
+  pushEnabled Boolean @default(true)
+  // TODO: Add email notifications for system staff later
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("notification_preferences")
+}
+
+model UserSettings {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // App settings
+  theme          String  @default("system") // light, dark, system
+  language       String  @default("en") // en, ar
+  hapticFeedback Boolean @default(true)
+  soundEffects   Boolean @default(true)
+  autoPlayVideos Boolean @default(false)
+
+  // Privacy settings
+  showLocation  Boolean @default(true)
+  allowMessages Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("user_settings")
+}
+
+// ========================================
+// ITEM MODELS
+// ========================================
+
+model Item {
+  id String @id @default(cuid())
+
+  // Basic Info
+  name           String
+  description    String
+  category       ItemCategory
+  condition      ItemCondition
+  estimatedValue Float?
+
+  // Brand & Model
+  brand String?
+  model String?
+  year  Int?
+
+  // Photos & Media
+  photos ItemPhoto[]
+  tags   String[] // Array of tags
+
+  // Availability
+  isAvailable Boolean @default(true)
+  isActive    Boolean @default(true)
+
+  // Location & Distance
+  distance Float? // Calculated distance from current user
+
+  // Ownership
+  ownerId String
+  owner   User   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  // Swipes & Matches
+  swipes         SwipeAction[]
+  matchesAsItem1 Match[]       @relation("Item1Matches")
+  matchesAsItem2 Match[]       @relation("Item2Matches")
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([category])
+  @@index([condition])
+  @@index([isAvailable])
+  @@index([isActive])
+  @@index([ownerId])
+  @@index([createdAt])
+  @@index([category, isAvailable, isActive])
+  @@index([estimatedValue])
+  @@index([category, condition, isAvailable])
+  @@map("items")
+}
+
+model ItemPhoto {
+  id     String @id @default(cuid())
+  itemId String
+  item   Item   @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  // Photo data
+  url          String
+  thumbnailUrl String?
+  altText      String?
+
+  // Order & display
+  order     Int     @default(0)
+  isPrimary Boolean @default(false)
+
+  // Metadata
+  width    Int?
+  height   Int?
+  fileSize Int? // in bytes
+
+  createdAt DateTime @default(now())
+
+  @@map("item_photos")
+}
+
+// ========================================
+// SWIPING & MATCHING MODELS
+// ========================================
+
+model SwipeAction {
+  id String @id @default(cuid())
+
+  // Swipe details
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  itemId String
+  item   Item   @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  direction SwipeDirection
+  timestamp DateTime       @default(now())
+
+  // Metadata
+  location   String? // User's location when swiped
+  deviceInfo String? // Device/browser info
+
+  @@unique([userId, itemId])
+  @@index([itemId, direction])
+  @@index([timestamp])
+  @@map("swipe_actions")
+}
+
+model Match {
+  id String @id @default(cuid())
+
+  // Users involved
+  user1Id String
+  user1   User   @relation("User1Matches", fields: [user1Id], references: [id], onDelete: Cascade)
+
+  user2Id String
+  user2   User   @relation("User2Matches", fields: [user2Id], references: [id], onDelete: Cascade)
+
+  // Items being swapped
+  user1ItemId String
+  user1Item   Item   @relation("Item1Matches", fields: [user1ItemId], references: [id], onDelete: Cascade)
+
+  user2ItemId String
+  user2Item   Item   @relation("Item2Matches", fields: [user2ItemId], references: [id], onDelete: Cascade)
+
+  // Match status
+  status MatchStatus @default(PENDING)
+
+  // Chat & Communication
+  messages ChatMessage[]
+
+  // Timestamps
+  createdAt     DateTime @default(now())
+  lastMessageAt DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([user1Id, user2Id, user1ItemId, user2ItemId])
+  @@index([user1Id])
+  @@index([user2Id])
+  @@index([status])
+  @@index([createdAt])
+  @@map("matches")
+}
+
+// ========================================
+// CHAT & MESSAGING MODELS
+// ========================================
+
+model ChatMessage {
+  id String @id @default(cuid())
+
+  // Message content
+  matchId String
+  match   Match  @relation(fields: [matchId], references: [id], onDelete: Cascade)
+
+  senderId String
+  sender   User   @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+
+  receiverId String
+  receiver   User   @relation("MessageReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  // Message details
+  content     String
+  messageType MessageType @default(TEXT)
+
+  // Media (for image/location messages)
+  mediaUrl  String?
+  mediaType String?
+
+  // Status
+  isRead      Boolean @default(false)
+  isDelivered Boolean @default(false)
+
+  // Timestamps
+  createdAt DateTime  @default(now())
+  readAt    DateTime?
+
+  @@index([matchId])
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([createdAt])
+  @@map("chat_messages")
+}
+
+// ========================================
+// NOTIFICATION MODELS
+// ========================================
+
+model Notification {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type    NotificationType
+  title   String
+  message String
+  data    Json? // Additional data for the notification
+
+  // Status
+  isRead      Boolean @default(false)
+  isDelivered Boolean @default(false)
+
+  // Timestamps
+  createdAt   DateTime  @default(now())
+  readAt      DateTime?
+  deliveredAt DateTime?
+
+  @@index([userId, isRead])
+  @@index([type, createdAt])
+  @@map("notifications")
+}
+
+// ========================================
+// ANALYTICS & TRACKING MODELS
+// ========================================
+
+model UserActivity {
+  id     String @id @default(cuid())
+  userId String
+
+  // Activity details
+  action   String // login, swipe, match, etc.
+  metadata Json? // Additional data about the action
+
+  // Location & device
+  location   String?
+  deviceInfo String?
+  ipAddress  String?
+
+  timestamp DateTime @default(now())
+
+  @@map("user_activities")
+}
+
+model AppMetrics {
+  id String @id @default(cuid())
+
+  // Metric details
+  metricName  String
+  metricValue Float
+  metricUnit  String?
+
+  // Context
+  category    String?
+  subcategory String?
+
+  // Timestamps
+  recordedAt DateTime @default(now())
+
+  @@map("app_metrics")
+}
