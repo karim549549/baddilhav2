@@ -21,6 +21,7 @@ RUN npx prisma generate
 
 # Build the application
 RUN npm run build
+RUN ls -la dist/
 
 # Production image, copy all the files and run the app
 FROM base AS runner
