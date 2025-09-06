@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { JWT_CONFIG } from '../../constants/jwt.constants';
-import { TokenPayload, TokenPair, Token } from '../../types/auth.types';
+import { JWT_CONFIG } from '../../libs/constants/jwt.constants';
+import { TokenPayload, TokenPair, Token } from '../../types';
 
 @Injectable()
 export class TokenFactory {
