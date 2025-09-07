@@ -31,29 +31,49 @@ export class DeepLinkService {
     this.listeners.forEach((listener) => listener(url));
 
     // Handle specific deep link patterns
-    if (url.includes("auth/google/callback")) {
-      this.handleGoogleAuthCallback(url);
+    if (url.includes("auth/success")) {
+      this.handleAuthSuccess(url);
+    } else if (url.includes("auth/username")) {
+      this.handleUsernameRequired(url);
     }
   };
 
-  private static async handleGoogleAuthCallback(url: string) {
+  private static async handleAuthSuccess(url: string) {
     try {
-      // For now, we'll call the backend to get the OAuth result
-      // In a real implementation, you might pass the auth code in the URL
-      const result = await AuthService.handleGoogleCallback();
+      const urlObj = new URL(url);
+      const tokensParam = urlObj.searchParams.get("tokens");
+      const userParam = urlObj.searchParams.get("user");
 
-      // Handle the result (login or registration)
-      if ("requiresUsername" in result) {
-        // New user - needs username selection
-        console.log("New user, requires username:", result.user);
-        // TODO: Navigate to username selection screen
-      } else {
-        // Existing user - logged in successfully
-        console.log("User logged in:", result.user);
-        // TODO: Store tokens and navigate to main app
+      if (tokensParam && userParam) {
+        const tokens = JSON.parse(decodeURIComponent(tokensParam));
+        const user = JSON.parse(decodeURIComponent(userParam));
+
+        console.log("✅ User logged in successfully:", user);
+        console.log("🔑 Tokens received:", tokens);
+
+        // TODO: Store tokens in secure storage
+        // TODO: Navigate to main app
       }
     } catch (error) {
-      console.error("Error handling Google auth callback:", error);
+      console.error("Error handling auth success:", error);
+    }
+  }
+
+  private static async handleUsernameRequired(url: string) {
+    try {
+      const urlObj = new URL(url);
+      const userParam = urlObj.searchParams.get("user");
+
+      if (userParam) {
+        const user = JSON.parse(decodeURIComponent(userParam));
+
+        console.log("👤 New user, requires username:", user);
+
+        // TODO: Navigate to username selection screen
+        // TODO: Pass user data to username screen
+      }
+    } catch (error) {
+      console.error("Error handling username required:", error);
     }
   }
 

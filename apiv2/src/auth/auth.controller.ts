@@ -27,7 +27,7 @@ import {
   ApiRefreshTokenBody,
 } from '../common/decorators/api-responses.decorator';
 import { GoogleAuthGuard } from './guards/google-auth.guard';
-import type { Request } from 'express';
+import type { Request, Response } from 'express';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -119,7 +119,19 @@ export class AuthController {
   @UseGuards(GoogleAuthGuard)
   async googleAuthCallback(
     @Req() req: Request & { user: GoogleUser },
-  ): Promise<AuthResponse | { user: GoogleUser; requiresUsername: boolean }> {
-    return this.authService.handleGoogleCallback(req.user);
+    @Res() res: Response,
+  ): Promise<void> {
+    const result = await this.authService.handleGoogleCallback(req.user);
+
+    // Redirect to deep link with result data
+    if ('requiresUsername' in result) {
+      // New user - redirect to username selection
+      const deepLinkUrl = `baddilha://auth/username?user=${encodeURIComponent(JSON.stringify(result.user))}`;
+      res.redirect(deepLinkUrl);
+    } else {
+      // Existing user - redirect with tokens
+      const deepLinkUrl = `baddilha://auth/success?tokens=${encodeURIComponent(JSON.stringify(result.tokens))}&user=${encodeURIComponent(JSON.stringify(result.user))}`;
+      res.redirect(deepLinkUrl);
+    }
   }
 }

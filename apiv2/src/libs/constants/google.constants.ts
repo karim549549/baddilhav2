@@ -8,7 +8,7 @@ export const GOOGLE_CONFIG = {
   SCOPES: ['email', 'profile'],
 
   // Default callback URL for development
-  DEFAULT_CALLBACK_URL: 'baddilha://auth/google/callback',
+  DEFAULT_CALLBACK_URL: 'https://baddilhav2.onrender.com/auth/google/callback',
 } as const;
 
 export const GOOGLE_ERROR_MESSAGES = {
