@@ -119,7 +119,22 @@ export class AuthController {
   @UseGuards(GoogleAuthGuard)
   async googleAuthCallback(
     @Req() req: Request & { user: GoogleUser },
-  ): Promise<AuthResponse | { user: GoogleUser; requiresUsername: boolean }> {
-    return this.authService.handleGoogleCallback(req.user);
+    @Res() res: Response,
+  ): Promise<void> {
+    const result = await this.authService.handleGoogleCallback(req.user);
+
+    // Redirect to Vercel Universal Link
+    if ('requiresUsername' in result) {
+      // New user - redirect to username selection
+      const userData = encodeURIComponent(JSON.stringify(result.user));
+      const redirectUrl = `https://baddilhav2.vercel.app/auth/google/callback?type=username&user=${userData}`;
+      res.redirect(redirectUrl);
+    } else {
+      // Existing user - redirect with tokens
+      const tokensData = encodeURIComponent(JSON.stringify(result.tokens));
+      const userData = encodeURIComponent(JSON.stringify(result.user));
+      const redirectUrl = `https://baddilhav2.vercel.app/auth/google/callback?type=success&tokens=${tokensData}&user=${userData}`;
+      res.redirect(redirectUrl);
+    }
   }
 }

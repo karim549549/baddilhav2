@@ -9,7 +9,7 @@
     "userInterfaceStyle": "automatic",
     "linking": {
       "schemes": ["baddilha"],
-      "prefixes": ["baddilha://", "https://baddilha.app"]
+      "prefixes": ["baddilha://", "https://baddilhav2.vercel.app"]
     },
     "newArchEnabled": true,
     "ios": {
