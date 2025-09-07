@@ -3,7 +3,10 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Strategy, VerifyCallback } from 'passport-google-oauth20';
 import { ConfigService } from '@nestjs/config';
 import { GoogleProfile, GoogleUser } from '../../types/google.types';
-import { GOOGLE_CONFIG, GOOGLE_ERROR_MESSAGES } from '../../libs/constants/google.constants';
+import {
+  GOOGLE_CONFIG,
+  GOOGLE_ERROR_MESSAGES,
+} from '../../libs/constants/google.constants';
 
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
@@ -13,7 +16,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       clientSecret: configService.get<string>(GOOGLE_CONFIG.CLIENT_SECRET_KEY),
       callbackURL: configService.get<string>(
         GOOGLE_CONFIG.CALLBACK_URL_KEY,
-        GOOGLE_CONFIG.DEFAULT_CALLBACK_URL
+        GOOGLE_CONFIG.DEFAULT_CALLBACK_URL,
       ),
       scope: GOOGLE_CONFIG.SCOPES,
     } as any);
@@ -23,7 +26,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     accessToken: string,
     refreshToken: string,
     profile: GoogleProfile,
-    done: VerifyCallback
+    done: VerifyCallback,
   ): Promise<any> {
     try {
       if (!profile || !profile.emails || !profile.emails[0]) {
@@ -36,10 +39,11 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       }
 
       const googleUser: GoogleUser = {
-        provider: 'google',
+        provider: 'GOOGLE',
         providerId: profile.id,
         email,
-        displayName: `${profile.name.givenName} ${profile.name.familyName}`.trim(),
+        displayName:
+          `${profile.name.givenName} ${profile.name.familyName}`.trim(),
         avatar: profile.photos?.[0]?.value,
         accessToken,
         refreshToken,

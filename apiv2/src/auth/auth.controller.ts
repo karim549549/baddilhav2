@@ -27,7 +27,7 @@ import {
   ApiRefreshTokenBody,
 } from '../common/decorators/api-responses.decorator';
 import { GoogleAuthGuard } from './guards/google-auth.guard';
-import type { Request, Response } from 'express';
+import type { Request } from 'express';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -105,28 +105,17 @@ export class AuthController {
   @Public()
   @AuthEndpoint(
     'Google OAuth callback',
-    'Handle Google OAuth callback and authenticate user',
+    'Handle Google OAuth callback and return user info for username selection',
   )
   @UseGuards(GoogleAuthGuard)
   async googleAuthCallback(
     @Req() req: Request & { user: GoogleUser },
-    @Res() res: Response,
-  ): Promise<void> {
-    try {
-      const authResponse = await this.authService.authenticateGoogleUser(
-        req.user,
-      );
-      res.json({
-        success: true,
-        message: 'Google authentication successful',
-        data: authResponse,
-      });
-    } catch (error) {
-      res.status(400).json({
-        success: false,
-        message: 'Google authentication failed',
-        error: error.message,
-      });
-    }
+  ): Promise<{ user: GoogleUser; requiresUsername: boolean }> {
+    const googleUser = req.user;
+
+    return {
+      user: googleUser,
+      requiresUsername: true,
+    };
   }
 }
