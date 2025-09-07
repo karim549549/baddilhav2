@@ -7,6 +7,10 @@
     "icon": "./assets/images/icon.png",
     "scheme": "baddilha",
     "userInterfaceStyle": "automatic",
+    "linking": {
+      "schemes": ["baddilha"],
+      "prefixes": ["baddilha://"]
+    },
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true

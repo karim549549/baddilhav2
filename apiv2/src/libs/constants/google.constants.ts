@@ -3,12 +3,12 @@ export const GOOGLE_CONFIG = {
   CLIENT_ID_KEY: 'GOOGLE_CLIENT_ID',
   CLIENT_SECRET_KEY: 'GOOGLE_CLIENT_SECRET',
   CALLBACK_URL_KEY: 'GOOGLE_CALLBACK_URL',
-  
+
   // OAuth scopes
   SCOPES: ['email', 'profile'],
-  
+
   // Default callback URL for development
-  DEFAULT_CALLBACK_URL: 'http://localhost:3000/auth/google/callback',
+  DEFAULT_CALLBACK_URL: 'baddilha://auth/google/callback',
 } as const;
 
 export const GOOGLE_ERROR_MESSAGES = {

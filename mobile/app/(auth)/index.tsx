@@ -1,24 +1,42 @@
 import { AntDesign, FontAwesome, Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import React from "react";
-import { Text, TouchableOpacity, View } from "react-native";
+import React, { useState } from "react";
+import { Text, TouchableOpacity, View, Alert } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { gradientColors } from "../../utils/theme";
+import { AuthService } from "../../src/services/auth.service";
+import { ApiError } from "../../src/types";
 
 export default function AuthScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const [loading, setLoading] = useState<string | null>(null);
 
-  const handleProviderAuth = (provider: string) => {
+  const handleProviderAuth = async (provider: string) => {
     console.log(`Auth with ${provider}`);
 
     if (provider === "phone") {
       router.push("/(auth)/phone-input");
+    } else if (provider === "google") {
+      setLoading("google");
+      try {
+        // Initiate Google OAuth flow
+        await AuthService.initiateGoogleAuth();
+      } catch (error) {
+        const apiError = error as ApiError;
+        Alert.alert(
+          "Google Auth Error",
+          `Status: ${apiError.statusCode}\nMessage: ${apiError.message}`
+        );
+        setLoading(null);
+      }
     } else {
-      // TODO: Implement Google/Apple auth logic
-      // For now, redirect to create-profile
-      router.replace("/create-profile");
+      // TODO: Implement Apple auth logic
+      Alert.alert(
+        "Coming Soon",
+        "Apple authentication will be available soon!"
+      );
     }
   };
 
@@ -60,17 +78,19 @@ export default function AuthScreen() {
           <TouchableOpacity
             className="w-full py-4 px-6 bg-white rounded-full flex-row items-center justify-center shadow-lg my-1"
             onPress={() => handleProviderAuth("google")}
+            disabled={loading === "google"}
             style={{
               shadowColor: "#000",
               shadowOffset: { width: 0, height: 2 },
               shadowOpacity: 0.1,
               shadowRadius: 4,
               elevation: 3,
+              opacity: loading === "google" ? 0.7 : 1,
             }}
           >
             <AntDesign name="google" size={20} color="#DB4437" />
             <Text className="text-gray-800 text-base font-semibold ml-3">
-              Continue with Google
+              {loading === "google" ? "Testing API..." : "Continue with Google"}
             </Text>
           </TouchableOpacity>
 

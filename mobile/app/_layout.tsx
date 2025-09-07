@@ -1,8 +1,12 @@
 import { Stack } from "expo-router";
 import React from "react";
 import "./globals.css";
+import { useDeepLinks } from "../src/hooks/useDeepLinks";
 
 export default function RootLayout() {
+  // Initialize deep link handling
+  useDeepLinks();
+
   return (
     <Stack
       screenOptions={{
