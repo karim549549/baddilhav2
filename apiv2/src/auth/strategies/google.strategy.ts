@@ -19,7 +19,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
         GOOGLE_CONFIG.DEFAULT_CALLBACK_URL,
       ),
       scope: GOOGLE_CONFIG.SCOPES,
-    } as any);
+    });
   }
 
   async validate(
@@ -27,31 +27,27 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     refreshToken: string,
     profile: GoogleProfile,
     done: VerifyCallback,
-  ): Promise<any> {
-    try {
-      if (!profile || !profile.emails || !profile.emails[0]) {
-        return done(new Error(GOOGLE_ERROR_MESSAGES.INVALID_PROFILE), null);
-      }
-
-      const email = profile.emails[0].value;
-      if (!email) {
-        return done(new Error(GOOGLE_ERROR_MESSAGES.MISSING_EMAIL), null);
-      }
-
-      const googleUser: GoogleUser = {
-        provider: 'GOOGLE',
-        providerId: profile.id,
-        email,
-        displayName:
-          `${profile.name.givenName} ${profile.name.familyName}`.trim(),
-        avatar: profile.photos?.[0]?.value,
-        accessToken,
-        refreshToken,
-      };
-
-      return done(null, googleUser);
-    } catch (error) {
-      return done(new Error(GOOGLE_ERROR_MESSAGES.OAUTH_FAILED), null);
+  ): Promise<void> {
+    if (!profile || !profile.emails || !profile.emails[0]) {
+      return done(new Error(GOOGLE_ERROR_MESSAGES.INVALID_PROFILE), null);
     }
+
+    const email = profile.emails[0].value;
+    if (!email) {
+      return done(new Error(GOOGLE_ERROR_MESSAGES.MISSING_EMAIL), null);
+    }
+
+    const googleUser: GoogleUser = {
+      provider: 'GOOGLE',
+      providerId: profile.id,
+      email,
+      displayName:
+        `${profile.name.givenName} ${profile.name.familyName}`.trim(),
+      avatar: profile.photos?.[0]?.value,
+      accessToken,
+      refreshToken,
+    };
+
+    return done(null, googleUser);
   }
 }

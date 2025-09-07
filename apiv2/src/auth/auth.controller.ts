@@ -34,16 +34,25 @@ import type { Request } from 'express';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post('register/oauth')
+  @Post('oauth/authenticate')
   @Public()
+  @HttpCode(HttpStatus.OK)
   @AuthEndpoint(
-    'Register user with OAuth provider',
-    'Register a new user using OAuth provider (Google, Discord, Apple) or login if user already exists',
+    'Smart OAuth authentication',
+    'Handles login, registration, or linking OAuth providers automatically',
   )
-  async registerWithOAuth(
-    @Body() registerUserDto: RegisterUserDto,
+  async authenticateOAuth(
+    @Body()
+    body: {
+      oauthProvider: string;
+      oauthProviderId: string;
+      email?: string;
+      displayName?: string;
+      avatarUrl?: string;
+      username?: string;
+    },
   ): Promise<AuthResponse> {
-    return this.authService.registerWithOAuth(registerUserDto);
+    return this.authService.authenticateOAuth(body);
   }
 
   @Post('register/otp/send')
@@ -105,17 +114,12 @@ export class AuthController {
   @Public()
   @AuthEndpoint(
     'Google OAuth callback',
-    'Handle Google OAuth callback and return user info for username selection',
+    'Smart Google OAuth callback - handles login or returns user data for registration',
   )
   @UseGuards(GoogleAuthGuard)
   async googleAuthCallback(
     @Req() req: Request & { user: GoogleUser },
-  ): Promise<{ user: GoogleUser; requiresUsername: boolean }> {
-    const googleUser = req.user;
-
-    return {
-      user: googleUser,
-      requiresUsername: true,
-    };
+  ): Promise<AuthResponse | { user: GoogleUser; requiresUsername: boolean }> {
+    return this.authService.handleGoogleCallback(req.user);
   }
 }

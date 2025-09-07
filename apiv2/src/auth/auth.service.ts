@@ -7,12 +7,10 @@ import {
 import { UserService } from '../user/user.service';
 import { TokenFactory } from './factories/token.factory';
 import { OtpService } from './services/otp.service';
-import { RegisterUserDto } from '../user/dto/register-user.dto';
 import { CreateUserDto } from '../user/dto/create-user.dto';
 import { SendOtpDto, VerifyOtpDto } from '../user/dto/otp-verification.dto';
 import { OAuthProvider } from '@prisma/client';
 import { AuthResponse, OtpResponse, GoogleUser } from '../types';
-import { GOOGLE_ERROR_MESSAGES } from '../libs/constants/google.constants';
 
 @Injectable()
 export class AuthService {
@@ -22,64 +20,137 @@ export class AuthService {
     private readonly otpService: OtpService,
   ) {}
 
-  async registerWithOAuth(
-    registerUserDto: RegisterUserDto,
-  ): Promise<AuthResponse> {
-    // Check if user already exists with OAuth provider
-    if (registerUserDto.oauthProvider && registerUserDto.oauthProviderId) {
-      const existingUser = await this.userService.findUserByOAuthProvider(
-        registerUserDto.oauthProvider,
-        registerUserDto.oauthProviderId,
-      );
+  async handleGoogleCallback(
+    googleUser: GoogleUser,
+  ): Promise<AuthResponse | { user: GoogleUser; requiresUsername: boolean }> {
+    // Check if this OAuth provider is already linked to a user (LOGIN case)
+    const existingUser = await this.userService.findUserByOAuthProvider(
+      googleUser.provider,
+      googleUser.providerId,
+    );
 
-      if (existingUser) {
+    if (existingUser) {
+      // OAuth provider already linked - this is a LOGIN, return tokens immediately
+      const tokens = await this.tokenFactory.generateTokenPair(existingUser.id);
+      return {
+        user: {
+          id: existingUser.id,
+          username: existingUser.username,
+          displayName: existingUser.displayName,
+          avatar: existingUser.avatar || undefined,
+          bio: existingUser.bio || undefined,
+          verificationStatus: existingUser.verificationStatus,
+          role: existingUser.role,
+        },
+        tokens,
+      };
+    }
+
+    // OAuth provider not linked - return user data for username selection (REGISTER/LINK case)
+    return {
+      user: googleUser,
+      requiresUsername: true,
+    };
+  }
+
+  async authenticateOAuth(body: {
+    oauthProvider: string;
+    oauthProviderId: string;
+    email?: string;
+    displayName?: string;
+    avatarUrl?: string;
+    username?: string;
+  }): Promise<AuthResponse> {
+    // Step 1: Check if OAuth provider is already linked to a user (LOGIN)
+    const existingOAuthUser = await this.userService.findUserByOAuthProvider(
+      body.oauthProvider,
+      body.oauthProviderId,
+    );
+
+    if (existingOAuthUser) {
+      // OAuth provider already linked - this is a LOGIN
+      const tokens = await this.tokenFactory.generateTokenPair(
+        existingOAuthUser.id,
+      );
+      return {
+        user: {
+          id: existingOAuthUser.id,
+          username: existingOAuthUser.username,
+          displayName: existingOAuthUser.displayName,
+          avatar: existingOAuthUser.avatar || undefined,
+          bio: existingOAuthUser.bio || undefined,
+          verificationStatus: existingOAuthUser.verificationStatus,
+          role: existingOAuthUser.role,
+        },
+        tokens,
+      };
+    }
+
+    // Step 2: Check if user exists with email (LINK OAuth to existing user)
+    if (body.email) {
+      const existingEmailUser = await this.userService.findUserByEmail(
+        body.email,
+      );
+      if (existingEmailUser) {
+        // User exists with this email - LINK the OAuth provider
+        await this.userService.linkOAuthProvider(existingEmailUser.id, {
+          provider: body.oauthProvider,
+          providerId: body.oauthProviderId,
+          accessToken: '', // We'll need to store this properly
+          refreshToken: '',
+        });
+
         const tokens = await this.tokenFactory.generateTokenPair(
-          existingUser.id,
+          existingEmailUser.id,
         );
         return {
           user: {
-            id: existingUser.id,
-            username: existingUser.username,
-            displayName: existingUser.displayName,
-            avatar: existingUser.avatar || undefined,
-            bio: existingUser.bio || undefined,
-            verificationStatus: existingUser.verificationStatus,
-            role: existingUser.role,
+            id: existingEmailUser.id,
+            username: existingEmailUser.username,
+            displayName: existingEmailUser.displayName,
+            avatar: existingEmailUser.avatar || undefined,
+            bio: existingEmailUser.bio || undefined,
+            verificationStatus: existingEmailUser.verificationStatus,
+            role: existingEmailUser.role,
           },
           tokens,
         };
       }
     }
 
-    // Check if user exists with username, email, or phone
-    const existingUser =
-      await this.userService.findUserByUsernameOrEmailOrPhone(
-        registerUserDto.username,
-        registerUserDto.email,
-        registerUserDto.phoneNumber,
+    // Step 3: Check if username is taken (for new registration)
+    if (body.username) {
+      const usernameExists = await this.userService.findUserByUsername(
+        body.username,
       );
-
-    if (existingUser) {
-      throw new ConflictException(
-        'User already exists with this username, email, or phone number',
-      );
+      if (usernameExists) {
+        throw new ConflictException('Username is already taken');
+      }
     }
 
-    // Create new user
-    const user = await this.userService.registerUser(registerUserDto);
+    // Step 4: Create new user (REGISTER)
+    const createUserDto: CreateUserDto = {
+      username: body.username || body.email?.split('@')[0] || 'user',
+      email: body.email,
+      displayName: body.displayName,
+      avatarUrl: body.avatarUrl,
+      oauthProvider: body.oauthProvider as any,
+      oauthProviderId: body.oauthProviderId,
+      isActive: true,
+    };
 
-    // Generate tokens
-    const tokens = await this.tokenFactory.generateTokenPair(user.id);
+    const newUser = await this.userService.createUser(createUserDto);
+    const tokens = await this.tokenFactory.generateTokenPair(newUser.id);
 
     return {
       user: {
-        id: user.id,
-        username: user.username,
-        displayName: user.displayName,
-        avatar: user.avatar || undefined,
-        bio: user.bio || undefined,
-        verificationStatus: user.verificationStatus,
-        role: user.role,
+        id: newUser.id,
+        username: newUser.username,
+        displayName: newUser.displayName,
+        avatar: newUser.avatar || undefined,
+        bio: newUser.bio || undefined,
+        verificationStatus: newUser.verificationStatus,
+        role: newUser.role,
       },
       tokens,
     };
