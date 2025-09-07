@@ -11,6 +11,7 @@ import {
   Min,
   Max,
 } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { UserVerificationStatus, OAuthProvider, Role } from '@prisma/client';
 
 export class CreateUserDto {

@@ -19,25 +19,33 @@ export class UserService {
         verificationStatus: createUserDto.verificationStatus || 'UNVERIFIED',
         role: createUserDto.role || 'USER',
         maxDistance: createUserDto.maxDistance || 50.0,
-        location: createUserDto.latitude && createUserDto.longitude ? {
-          create: {
-            latitude: createUserDto.latitude,
-            longitude: createUserDto.longitude,
-            city: createUserDto.address || 'Unknown',
-            country: 'Unknown',
-          }
-        } : undefined,
-        preferences: createUserDto.interestedGames ? {
-          create: {
-            gamesInterestedIn: createUserDto.interestedGames,
-          }
-        } : undefined,
-        oauthAccounts: createUserDto.oauthProvider && createUserDto.oauthProviderId ? {
-          create: {
-            provider: createUserDto.oauthProvider,
-            providerAccountId: createUserDto.oauthProviderId,
-          }
-        } : undefined,
+        location:
+          createUserDto.latitude && createUserDto.longitude
+            ? {
+                create: {
+                  latitude: createUserDto.latitude,
+                  longitude: createUserDto.longitude,
+                  city: createUserDto.address || 'Unknown',
+                  country: 'Unknown',
+                },
+              }
+            : undefined,
+        preferences: createUserDto.interestedGames
+          ? {
+              create: {
+                gamesInterestedIn: createUserDto.interestedGames,
+              },
+            }
+          : undefined,
+        oauthAccounts:
+          createUserDto.oauthProvider && createUserDto.oauthProviderId
+            ? {
+                create: {
+                  provider: createUserDto.oauthProvider,
+                  providerAccountId: createUserDto.oauthProviderId,
+                },
+              }
+            : undefined,
       },
       include: {
         location: true,
@@ -54,11 +62,13 @@ export class UserService {
     const existingUser = await this.findUserByUsernameOrEmailOrPhone(
       registerUserDto.username,
       registerUserDto.email,
-      registerUserDto.phoneNumber
+      registerUserDto.phoneNumber,
     );
 
     if (existingUser) {
-      throw new ConflictException('User already exists with this username, email, or phone number');
+      throw new ConflictException(
+        'User already exists with this username, email, or phone number',
+      );
     }
 
     const user = await this.prisma.user.create({
@@ -68,12 +78,15 @@ export class UserService {
         phone: registerUserDto.phoneNumber,
         verificationStatus: 'UNVERIFIED',
         role: 'USER',
-        oauthAccounts: registerUserDto.oauthProvider && registerUserDto.oauthProviderId ? {
-          create: {
-            provider: registerUserDto.oauthProvider,
-            providerAccountId: registerUserDto.oauthProviderId,
-          }
-        } : undefined,
+        oauthAccounts:
+          registerUserDto.oauthProvider && registerUserDto.oauthProviderId
+            ? {
+                create: {
+                  provider: registerUserDto.oauthProvider,
+                  providerAccountId: registerUserDto.oauthProviderId,
+                },
+              }
+            : undefined,
       },
       include: {
         oauthAccounts: true,
@@ -116,12 +129,15 @@ export class UserService {
     });
   }
 
-  async linkOAuthProvider(userId: string, oauthData: {
-    provider: string;
-    providerId: string;
-    accessToken: string;
-    refreshToken?: string;
-  }): Promise<void> {
+  async linkOAuthProvider(
+    userId: string,
+    oauthData: {
+      provider: string;
+      providerId: string;
+      accessToken: string;
+      refreshToken?: string;
+    },
+  ): Promise<void> {
     await this.prisma.oAuthAccount.upsert({
       where: {
         provider_providerAccountId: {
@@ -157,7 +173,7 @@ export class UserService {
   async findUserByUsernameOrEmailOrPhone(
     username?: string,
     email?: string,
-    phoneNumber?: string
+    phoneNumber?: string,
   ): Promise<User | null> {
     if (!username && !phoneNumber) {
       return null;
@@ -166,9 +182,9 @@ export class UserService {
     return this.prisma.user.findFirst({
       where: {
         OR: [
-          username ? { username } : undefined,
-          phoneNumber ? { phone: phoneNumber } : undefined,
-        ].filter(Boolean),
+          ...(username ? [{ username }] : []),
+          ...(phoneNumber ? [{ phone: phoneNumber }] : []),
+        ],
       },
       include: {
         location: true,
@@ -178,7 +194,10 @@ export class UserService {
     });
   }
 
-  async findUserByOAuthProvider(provider: string, providerId: string): Promise<User | null> {
+  async findUserByOAuthProvider(
+    provider: string,
+    providerId: string,
+  ): Promise<User | null> {
     const oauthAccount = await this.prisma.oAuthAccount.findUnique({
       where: {
         provider_providerAccountId: {
@@ -200,7 +219,10 @@ export class UserService {
     return oauthAccount?.user || null;
   }
 
-  async updateUser(id: string, updateData: Partial<CreateUserDto>): Promise<User> {
+  async updateUser(
+    id: string,
+    updateData: Partial<CreateUserDto>,
+  ): Promise<User> {
     const user = await this.prisma.user.update({
       where: { id },
       data: {

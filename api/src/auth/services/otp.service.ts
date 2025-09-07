@@ -1,6 +1,6 @@
 import { Injectable, Logger, Inject } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Cache } from 'cache-manager';
+import type { Cache } from 'cache-manager';
 import { CACHE_CONFIG } from '../../libs/constants/cache.constants';
 import { OtpData, OtpGenerationResult } from '../../types';
 
@@ -8,7 +8,7 @@ import { OtpData, OtpGenerationResult } from '../../types';
 export class OtpService {
   private readonly logger = new Logger(OtpService.name);
   private readonly MAX_ATTEMPTS = 3;
-  private readonly OTP_TTL = CACHE_CONFIG.OTP_TTL; 
+  private readonly OTP_TTL = CACHE_CONFIG.OTP_TTL;
 
   constructor(
     @Inject(CACHE_MANAGER)
@@ -27,7 +27,10 @@ export class OtpService {
     return `${CACHE_CONFIG.OTP_ATTEMPTS_PREFIX}${identifier}`;
   }
 
-  async generateOtp(phoneNumber?: string, email?: string): Promise<OtpGenerationResult> {
+  async generateOtp(
+    phoneNumber?: string,
+    email?: string,
+  ): Promise<OtpGenerationResult> {
     const identifier = phoneNumber || email;
     if (!identifier) {
       throw new Error('Either phone number or email must be provided');
@@ -45,24 +48,36 @@ export class OtpService {
     };
 
     // Store OTP in cache
-    await this.cacheManager.set(this.getOtpKey(identifier), otpData, this.OTP_TTL * 1000);
+    await this.cacheManager.set(
+      this.getOtpKey(identifier),
+      otpData,
+      this.OTP_TTL * 1000,
+    );
 
-    this.logger.log(`OTP generated for ${identifier} (expires in ${this.OTP_TTL}s)`);
+    this.logger.log(
+      `OTP generated for ${identifier} (expires in ${this.OTP_TTL}s)`,
+    );
 
     return { code, expiresAt };
   }
 
   async verifyOtp(identifier: string, providedCode: string): Promise<boolean> {
-    const otpData = await this.cacheManager.get<OtpData>(this.getOtpKey(identifier));
-    
+    const otpData = await this.cacheManager.get<OtpData>(
+      this.getOtpKey(identifier),
+    );
+
     if (!otpData) {
-      this.logger.warn(`OTP verification failed: No OTP found for ${identifier}`);
+      this.logger.warn(
+        `OTP verification failed: No OTP found for ${identifier}`,
+      );
       return false;
     }
 
     // Check attempts
     if (otpData.attempts >= this.MAX_ATTEMPTS) {
-      this.logger.warn(`OTP verification failed: Max attempts exceeded for ${identifier}`);
+      this.logger.warn(
+        `OTP verification failed: Max attempts exceeded for ${identifier}`,
+      );
       await this.cacheManager.del(this.getOtpKey(identifier));
       return false;
     }
@@ -70,9 +85,15 @@ export class OtpService {
     // Verify code
     if (otpData.code !== providedCode) {
       otpData.attempts += 1;
-      await this.cacheManager.set(this.getOtpKey(identifier), otpData, this.OTP_TTL * 1000);
-      
-      this.logger.warn(`OTP verification failed: Invalid code for ${identifier} (attempt ${otpData.attempts}/${this.MAX_ATTEMPTS})`);
+      await this.cacheManager.set(
+        this.getOtpKey(identifier),
+        otpData,
+        this.OTP_TTL * 1000,
+      );
+
+      this.logger.warn(
+        `OTP verification failed: Invalid code for ${identifier} (attempt ${otpData.attempts}/${this.MAX_ATTEMPTS})`,
+      );
       return false;
     }
 
@@ -83,9 +104,13 @@ export class OtpService {
     return true;
   }
 
-  async getOtpInfo(identifier: string): Promise<{ attempts: number; createdAt: Date } | null> {
-    const otpData = await this.cacheManager.get<OtpData>(this.getOtpKey(identifier));
-    
+  async getOtpInfo(
+    identifier: string,
+  ): Promise<{ attempts: number; createdAt: Date } | null> {
+    const otpData = await this.cacheManager.get<OtpData>(
+      this.getOtpKey(identifier),
+    );
+
     if (!otpData) {
       return null;
     }
@@ -102,8 +127,14 @@ export class OtpService {
   }
 
   async isOtpValid(identifier: string): Promise<boolean> {
-    const otpData = await this.cacheManager.get<OtpData>(this.getOtpKey(identifier));
-    return otpData !== null && otpData.attempts < this.MAX_ATTEMPTS;
+    const otpData = await this.cacheManager.get<OtpData>(
+      this.getOtpKey(identifier),
+    );
+    return (
+      otpData !== null &&
+      otpData !== undefined &&
+      otpData.attempts < this.MAX_ATTEMPTS
+    );
   }
 
   // Note: Rate limiting is now handled by @nestjs/throttler at the controller level

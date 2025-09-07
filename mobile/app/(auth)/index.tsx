@@ -22,13 +22,26 @@ export default function AuthScreen() {
       setLoading("google");
       try {
         // Initiate Google OAuth flow
-        await AuthService.initiateGoogleAuth();
+        const result = await AuthService.initiateGoogleAuth();
+
+        if ("requiresUsername" in result) {
+          // New user - needs username selection
+          console.log("👤 New user, requires username:", result.user);
+          Alert.alert("New User", "Please complete your profile setup");
+          // TODO: Navigate to username selection screen
+        } else {
+          // Existing user - logged in successfully
+          console.log("✅ User logged in:", result.user);
+          Alert.alert("Success", "Logged in successfully!");
+          // TODO: Store tokens and navigate to main app
+        }
       } catch (error) {
         const apiError = error as ApiError;
         Alert.alert(
           "Google Auth Error",
           `Status: ${apiError.statusCode}\nMessage: ${apiError.message}`
         );
+      } finally {
         setLoading(null);
       }
     } else {

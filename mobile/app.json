@@ -9,13 +9,15 @@
     "userInterfaceStyle": "automatic",
     "linking": {
       "schemes": ["baddilha"],
-      "prefixes": ["baddilha://"]
+      "prefixes": ["baddilha://", "https://baddilha.app"]
     },
     "newArchEnabled": true,
     "ios": {
+      "bundleIdentifier": "com.baddilha.app",
       "supportsTablet": true
     },
     "android": {
+      "package": "com.baddilha.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"

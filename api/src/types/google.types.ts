@@ -1,3 +1,5 @@
+import { OAuthProvider } from '@prisma/client';
+
 export interface GoogleProfile {
   id: string;
   name: {
@@ -15,7 +17,7 @@ export interface GoogleProfile {
 }
 
 export interface GoogleUser {
-  provider: 'google';
+  provider: OAuthProvider;
   providerId: string;
   email: string;
   displayName: string;

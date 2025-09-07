@@ -58,7 +58,7 @@ export default tseslint.config(
       '@typescript-eslint/no-empty-interface': 'off',
       '@typescript-eslint/no-var-requires': 'off',
       '@typescript-eslint/ban-ts-comment': 'off',
-      
+
       // Keep only critical rules
       'no-console': 'off',
       'no-debugger': 'warn',
@@ -66,7 +66,7 @@ export default tseslint.config(
       'no-var': 'error',
       'prefer-const': 'warn',
       'no-unused-vars': 'off', // Use TypeScript version instead
-      
+
       // Disable prettier conflicts
       'prettier/prettier': 'off',
     },

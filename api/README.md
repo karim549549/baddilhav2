@@ -23,61 +23,7 @@
 
 ## Description
 
-**BADDILHA** - Item Swapping App API
-
-A NestJS-based backend for the Baddilha item swapping application. This API handles user authentication, item management, matching algorithms, and real-time chat functionality.
-
-## Environment Setup
-
-Before running the project, you need to set up your environment variables:
-
-1. Copy the environment template:
-```bash
-cp env.template .env
-```
-
-**Note:** The template file is named `env.template` (without the dot) due to system restrictions. Copy it to `.env` (with the dot) for your local environment.
-
-2. Fill in your values in the `.env` file:
-   - **Supabase Database URLs** (required)
-   - **JWT Access & Refresh Secrets** (required)
-   - **JWT Expiration Times** (optional, has defaults)
-   - **Other services** (optional for MVP)
-
-See `env.template` for all available options.
-
-## JWT Authentication Setup
-
-The JWT authentication system is pre-configured but requires package installation:
-
-1. **Install required packages:**
-```bash
-npm install @nestjs/jwt @nestjs/config
-```
-
-2. **See `SETUP.md` for complete setup instructions**
-3. **Use `auth.module.complete.ts` as reference after installation**
-
-## Development Configuration
-
-### Linting & TypeScript
-- **Lenient ESLint** - Only critical errors, most rules disabled for development
-- **Relaxed TypeScript** - Strict mode disabled, focus on functionality over type safety
-- **Quiet Mode** - Linting runs silently, only shows actual errors
-
-### Quick Commands
-```bash
-# Start development (no linting interference)
-npm run dev
-
-# Check linting (quiet mode)
-npm run lint:check
-
-# Fix linting issues
-npm run lint
-```
-
-## Project setup
+[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
 ## Project setup
 

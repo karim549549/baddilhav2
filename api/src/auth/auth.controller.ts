@@ -27,23 +27,32 @@ import {
   ApiRefreshTokenBody,
 } from '../common/decorators/api-responses.decorator';
 import { GoogleAuthGuard } from './guards/google-auth.guard';
-import { Request, Response } from 'express';
+import type { Request, Response } from 'express';
 
 @ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post('register/oauth')
+  @Post('oauth/authenticate')
   @Public()
+  @HttpCode(HttpStatus.OK)
   @AuthEndpoint(
-    'Register user with OAuth provider',
-    'Register a new user using OAuth provider (Google, Discord, Apple) or login if user already exists',
+    'Smart OAuth authentication',
+    'Handles login, registration, or linking OAuth providers automatically',
   )
-  async registerWithOAuth(
-    @Body() registerUserDto: RegisterUserDto,
+  async authenticateOAuth(
+    @Body()
+    body: {
+      oauthProvider: string;
+      oauthProviderId: string;
+      email?: string;
+      displayName?: string;
+      avatarUrl?: string;
+      username?: string;
+    },
   ): Promise<AuthResponse> {
-    return this.authService.registerWithOAuth(registerUserDto);
+    return this.authService.authenticateOAuth(body);
   }
 
   @Post('register/otp/send')
@@ -105,28 +114,12 @@ export class AuthController {
   @Public()
   @AuthEndpoint(
     'Google OAuth callback',
-    'Handle Google OAuth callback and authenticate user',
+    'Smart Google OAuth callback - handles login or returns user data for registration',
   )
   @UseGuards(GoogleAuthGuard)
   async googleAuthCallback(
     @Req() req: Request & { user: GoogleUser },
-    @Res() res: Response,
-  ): Promise<void> {
-    try {
-      const authResponse = await this.authService.authenticateGoogleUser(
-        req.user,
-      );
-      res.json({
-        success: true,
-        message: 'Google authentication successful',
-        data: authResponse,
-      });
-    } catch (error) {
-      res.status(400).json({
-        success: false,
-        message: 'Google authentication failed',
-        error: error.message,
-      });
-    }
+  ): Promise<AuthResponse | { user: GoogleUser; requiresUsername: boolean }> {
+    return this.authService.handleGoogleCallback(req.user);
   }
 }
