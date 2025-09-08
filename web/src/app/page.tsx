@@ -9,6 +9,14 @@ export default function Home() {
           <p className="text-lg text-white/60">
             Seamless OAuth authentication for mobile apps
           </p>
+          <div className="mt-4">
+            <a
+              href="/debug"
+              className="inline-block px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors"
+            >
+              🔍 View Debug Info
+            </a>
+          </div>
         </div>
 
         {/* Status Cards */}

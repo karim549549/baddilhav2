@@ -36,9 +36,17 @@ function CallbackContent() {
       tokens: tokens ? "present" : "missing",
       user: user ? "present" : "missing",
       allParams: Object.fromEntries(searchParams.entries()),
+      timestamp: new Date().toISOString(),
+      url: window.location.href,
     };
 
     console.log("🔍 Callback parameters:", debugInfo);
+
+    // Store debug info globally in localStorage
+    localStorage.setItem(
+      "baddilha_oauth_debug",
+      JSON.stringify(debugInfo, null, 2)
+    );
 
     // Also show on page for debugging
     const debugElement = document.getElementById("debug-info");
