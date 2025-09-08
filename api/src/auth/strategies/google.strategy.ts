@@ -12,8 +12,11 @@ import {
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   constructor(private readonly configService: ConfigService) {
     super({
-      clientID: configService.get<string>(GOOGLE_CONFIG.CLIENT_ID_KEY),
-      clientSecret: configService.get<string>(GOOGLE_CONFIG.CLIENT_SECRET_KEY),
+      clientID:
+        '211876270719-lte0so8pfqoj4u8481himsk52jbq5vj4.apps.googleusercontent.com', // Android client ID
+      clientSecret:
+        configService.get<string>(GOOGLE_CONFIG.CLIENT_SECRET_KEY) ||
+        'GOCSPX-your-secret-here',
       callbackURL: configService.get<string>(
         GOOGLE_CONFIG.CALLBACK_URL_KEY,
         GOOGLE_CONFIG.DEFAULT_CALLBACK_URL,
