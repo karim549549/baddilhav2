@@ -31,36 +31,47 @@ function CallbackContent() {
     const user = searchParams.get("user");
 
     // Debug: Log all parameters
-    console.log("🔍 Callback parameters:", {
+    const debugInfo = {
       type,
       tokens: tokens ? "present" : "missing",
       user: user ? "present" : "missing",
       allParams: Object.fromEntries(searchParams.entries()),
-    });
+    };
 
-    if (type === "success" && tokens && user) {
-      // Existing user - redirect with tokens
-      const deepLinkUrl = `baddilha://auth/success?tokens=${tokens}&user=${user}`;
-      window.location.href = deepLinkUrl;
-    } else if (type === "username" && user) {
-      // New user - redirect to username selection
-      const deepLinkUrl = `baddilha://auth/username?user=${user}`;
-      window.location.href = deepLinkUrl;
-    } else {
-      // Error case - pass error information
-      const error = searchParams.get("error") || "unknown_error";
-      const errorDescription =
-        searchParams.get("error_description") || "Authentication failed";
-      const message =
-        searchParams.get("message") || "No additional details available";
+    console.log("🔍 Callback parameters:", debugInfo);
 
-      const deepLinkUrl = `baddilha://auth/error?error=${encodeURIComponent(
-        error
-      )}&error_description=${encodeURIComponent(
-        errorDescription
-      )}&message=${encodeURIComponent(message)}`;
-      window.location.href = deepLinkUrl;
+    // Also show on page for debugging
+    const debugElement = document.getElementById("debug-info");
+    if (debugElement) {
+      debugElement.textContent = JSON.stringify(debugInfo, null, 2);
     }
+
+    // Add delay to see debug info
+    setTimeout(() => {
+      if (type === "success" && tokens && user) {
+        // Existing user - redirect with tokens
+        const deepLinkUrl = `baddilha://auth/success?tokens=${tokens}&user=${user}`;
+        window.location.href = deepLinkUrl;
+      } else if (type === "username" && user) {
+        // New user - redirect to username selection
+        const deepLinkUrl = `baddilha://auth/username?user=${user}`;
+        window.location.href = deepLinkUrl;
+      } else {
+        // Error case - pass error information
+        const error = searchParams.get("error") || "unknown_error";
+        const errorDescription =
+          searchParams.get("error_description") || "Authentication failed";
+        const message =
+          searchParams.get("message") || "No additional details available";
+
+        const deepLinkUrl = `baddilha://auth/error?error=${encodeURIComponent(
+          error
+        )}&error_description=${encodeURIComponent(
+          errorDescription
+        )}&message=${encodeURIComponent(message)}`;
+        window.location.href = deepLinkUrl;
+      }
+    }, 10000); // 3 second delay
   }, [searchParams]);
 
   return (
@@ -110,6 +121,17 @@ function CallbackContent() {
             <div className="w-2 h-2 bg-gray-600 rounded-full mr-3"></div>
             <span className="text-sm">Opening Baddilha app</span>
           </div>
+        </div>
+
+        {/* Debug Info */}
+        <div className="mt-8 p-4 bg-gray-800/50 rounded-lg border border-gray-700/50">
+          <div className="text-xs text-white/60 mb-2">Debug Info:</div>
+          <pre
+            id="debug-info"
+            className="text-xs text-white/80 whitespace-pre-wrap break-all"
+          >
+            Loading...
+          </pre>
         </div>
 
         {/* Footer */}
