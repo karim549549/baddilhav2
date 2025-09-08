@@ -121,19 +121,27 @@ export class AuthController {
     @Req() req: Request & { user: GoogleUser },
     @Res() res: Response,
   ): Promise<void> {
+    console.log('🔍 OAuth callback received');
+    console.log('🔍 Request user:', JSON.stringify(req.user, null, 2));
+    console.log('🔍 Request headers:', req.headers);
+    console.log('🔍 Request query:', req.query);
+
     const result = await this.authService.handleGoogleCallback(req.user);
+    console.log('🔍 Auth service result:', JSON.stringify(result, null, 2));
 
     // Redirect to Vercel Universal Link
     if ('requiresUsername' in result) {
       // New user - redirect to username selection
       const userData = encodeURIComponent(JSON.stringify(result.user));
       const redirectUrl = `https://baddilhav2.vercel.app/auth/google/callback?type=username&user=${userData}`;
+      console.log('🔍 Redirecting to username selection:', redirectUrl);
       res.redirect(redirectUrl);
     } else {
       // Existing user - redirect with tokens
       const tokensData = encodeURIComponent(JSON.stringify(result.tokens));
       const userData = encodeURIComponent(JSON.stringify(result.user));
       const redirectUrl = `https://baddilhav2.vercel.app/auth/google/callback?type=success&tokens=${tokensData}&user=${userData}`;
+      console.log('🔍 Redirecting to success:', redirectUrl);
       res.redirect(redirectUrl);
     }
   }
