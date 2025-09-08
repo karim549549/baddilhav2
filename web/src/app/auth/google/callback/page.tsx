@@ -30,6 +30,14 @@ function CallbackContent() {
     const tokens = searchParams.get("tokens");
     const user = searchParams.get("user");
 
+    // Debug: Log all parameters
+    console.log("🔍 Callback parameters:", {
+      type,
+      tokens: tokens ? "present" : "missing",
+      user: user ? "present" : "missing",
+      allParams: Object.fromEntries(searchParams.entries()),
+    });
+
     if (type === "success" && tokens && user) {
       // Existing user - redirect with tokens
       const deepLinkUrl = `baddilha://auth/success?tokens=${tokens}&user=${user}`;
@@ -39,8 +47,18 @@ function CallbackContent() {
       const deepLinkUrl = `baddilha://auth/username?user=${user}`;
       window.location.href = deepLinkUrl;
     } else {
-      // Error case
-      const deepLinkUrl = "baddilha://auth/error";
+      // Error case - pass error information
+      const error = searchParams.get("error") || "unknown_error";
+      const errorDescription =
+        searchParams.get("error_description") || "Authentication failed";
+      const message =
+        searchParams.get("message") || "No additional details available";
+
+      const deepLinkUrl = `baddilha://auth/error?error=${encodeURIComponent(
+        error
+      )}&error_description=${encodeURIComponent(
+        errorDescription
+      )}&message=${encodeURIComponent(message)}`;
       window.location.href = deepLinkUrl;
     }
   }, [searchParams]);

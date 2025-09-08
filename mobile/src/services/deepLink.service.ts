@@ -1,4 +1,4 @@
-import { Linking } from "react-native";
+import { Linking, Alert } from "react-native";
 import { AuthService } from "./auth.service";
 export class DeepLinkService {
   private static listeners: ((url: string) => void)[] = [];
@@ -35,6 +35,8 @@ export class DeepLinkService {
       this.handleAuthSuccess(url);
     } else if (url.includes("auth/username")) {
       this.handleUsernameRequired(url);
+    } else if (url.includes("auth/error")) {
+      this.handleAuthError(url);
     }
   };
 
@@ -74,6 +76,33 @@ export class DeepLinkService {
       }
     } catch (error) {
       console.error("Error handling username required:", error);
+    }
+  }
+
+  private static async handleAuthError(url: string) {
+    try {
+      console.error("❌ Full Error URL:", url);
+
+      const urlObj = new URL(url);
+      const errorParam = urlObj.searchParams.get("error");
+      const errorDescription = urlObj.searchParams.get("error_description");
+      const message = urlObj.searchParams.get("message");
+
+      console.error("❌ OAuth Error:", errorParam);
+      console.error("❌ Error Description:", errorDescription);
+      console.error("❌ Message:", message);
+
+      // Show error alert to user with more details
+      Alert.alert(
+        "Authentication Error",
+        `Full URL: ${url}\n\nError: ${errorParam || "No error param"}\nDescription: ${errorDescription || "No description"}\nMessage: ${message || "No message"}`,
+        [{ text: "OK" }]
+      );
+    } catch (error) {
+      console.error("Error handling auth error:", error);
+      Alert.alert("Authentication Error", `Failed to parse error URL: ${url}`, [
+        { text: "OK" },
+      ]);
     }
   }
 

@@ -19,68 +19,22 @@ export class AuthService {
     AuthResponse | GoogleCallbackResponse
   > {
     try {
-      // Create a redirect URI for the mobile app using Universal Links
-      const redirectUri = AuthSession.makeRedirectUri({
-        scheme: "https",
-        hostname: "baddilha.app",
-        path: "auth/google/callback",
-      });
+      // Use backend OAuth flow - this is why we built the web app!
+      const backendOAuthUrl = "https://baddilhav2.onrender.com/auth/google";
 
-      // Create the OAuth request
-      const request = new AuthSession.AuthRequest({
-        clientId:
-          "211876270719-9tnup7ataj2fovclpcgs34c96p5huv73.apps.googleusercontent.com",
-        scopes: ["openid", "profile", "email"],
-        redirectUri,
-        responseType: AuthSession.ResponseType.Code,
-        extraParams: {},
-        additionalParameters: {},
-      });
-
-      // Start the OAuth flow
-      const result = await request.promptAsync({
-        authorizationEndpoint: "https://accounts.google.com/o/oauth2/v2/auth",
-      });
-
-      if (result.type === "success") {
-        // Exchange the authorization code for tokens
-        const tokenResponse = await AuthSession.exchangeCodeAsync(
-          {
-            clientId:
-              "211876270719-9tnup7ataj2fovclpcgs34c96p5huv73.apps.googleusercontent.com",
-            code: result.params.code,
-            redirectUri,
-            extraParams: {
-              code_verifier: request.codeVerifier,
-            },
-          },
-          {
-            tokenEndpoint: "https://oauth2.googleapis.com/token",
-          }
-        );
-
-        // Get user info from Google
-        const userInfoResponse = await fetch(
-          `https://www.googleapis.com/oauth2/v2/userinfo?access_token=${tokenResponse.accessToken}`
-        );
-        const userInfo = await userInfoResponse.json();
-
-        // Send the OAuth data to your backend
-        const backendResponse = await apiClient.post(
-          "/auth/oauth/authenticate",
-          {
-            oauthProvider: "GOOGLE",
-            oauthProviderId: userInfo.id,
-            email: userInfo.email,
-            displayName: userInfo.name,
-            avatarUrl: userInfo.picture,
-          }
-        );
-
-        return backendResponse.data;
+      // Open backend OAuth URL in browser
+      const supported = await Linking.canOpenURL(backendOAuthUrl);
+      if (supported) {
+        await Linking.openURL(backendOAuthUrl);
       } else {
-        throw new Error("OAuth flow was cancelled or failed");
+        throw new Error("Cannot open OAuth URL");
       }
+
+      // The response will come via deep link from Vercel
+      return {
+        type: "redirect",
+        message: "OAuth initiated, waiting for deep link...",
+      } as unknown as GoogleCallbackResponse;
     } catch (error) {
       console.error("Google OAuth error:", error);
       throw error;

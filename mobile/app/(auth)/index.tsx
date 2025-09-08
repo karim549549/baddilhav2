@@ -21,20 +21,12 @@ export default function AuthScreen() {
     } else if (provider === "google") {
       setLoading("google");
       try {
-        // Initiate Google OAuth flow
-        const result = await AuthService.initiateGoogleAuth();
+        // Initiate Google OAuth flow - opens browser
+        await AuthService.initiateGoogleAuth();
 
-        if ("requiresUsername" in result) {
-          // New user - needs username selection
-          console.log("👤 New user, requires username:", result.user);
-          Alert.alert("New User", "Please complete your profile setup");
-          // TODO: Navigate to username selection screen
-        } else {
-          // Existing user - logged in successfully
-          console.log("✅ User logged in:", result.user);
-          Alert.alert("Success", "Logged in successfully!");
-          // TODO: Store tokens and navigate to main app
-        }
+        // The actual OAuth response will come via deep link
+        // The deep link handler will process the response
+        console.log("🔄 OAuth flow initiated, waiting for deep link...");
       } catch (error) {
         const apiError = error as ApiError;
         Alert.alert(

@@ -8,13 +8,21 @@
     "scheme": "baddilha",
     "userInterfaceStyle": "automatic",
     "linking": {
-      "schemes": ["baddilha"],
-      "prefixes": ["baddilha://", "https://baddilhav2.vercel.app"]
+      "schemes": [
+        "baddilha"
+      ],
+      "prefixes": [
+        "baddilha://",
+        "https://baddilhav2.vercel.app"
+      ]
     },
     "newArchEnabled": true,
     "ios": {
       "bundleIdentifier": "com.baddilha.app",
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "com.baddilha.app",
@@ -43,6 +51,12 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "5a52ad16-5a6e-4997-a04e-9f6f7830406c"
+      }
     }
   }
 }
