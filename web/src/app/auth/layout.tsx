@@ -10,13 +10,13 @@ export default function AuthLayout({
   return (
     <div className="min-h-screen flex flex-col">
       <div className="flex flex-1">
-        {/* Left Sidebar - 1/4 of screen */}
-        <div className="w-1/4 bg-neutral-900">
+        {/* Left Sidebar - Hidden on small screens, 1/4 on medium+ */}
+        <div className="hidden md:block w-1/4 bg-neutral-900">
           <AuthSidebar />
         </div>
 
-        {/* Right Main Area - 3/4 of screen */}
-        <div className="w-3/4 bg-neutral-950">{children}</div>
+        {/* Right Main Area - Full width on small screens, 3/4 on medium+ */}
+        <div className="w-full md:w-3/4 bg-neutral-950">{children}</div>
       </div>
 
       {/* Footer Bar - Bottom of entire screen */}
