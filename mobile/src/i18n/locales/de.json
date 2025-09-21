@@ -1,0 +1,180 @@
+{
+  "common": {
+    "loading": "Laden...",
+    "error": "Fehler",
+    "success": "Erfolg",
+    "cancel": "Abbrechen",
+    "ok": "OK",
+    "yes": "Ja",
+    "no": "Nein",
+    "save": "Speichern",
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "back": "Zurück",
+    "next": "Weiter",
+    "done": "Fertig",
+    "search": "Suchen",
+    "filter": "Filtern",
+    "clear": "Löschen",
+    "refresh": "Aktualisieren",
+    "retry": "Wiederholen"
+  },
+  "auth": {
+    "welcome": "Willkommen bei Baddilha",
+    "tagline": "Entdecke erstaunliche Artikel in deiner Umgebung und tausche mit Menschen, die deine Interessen teilen",
+    "continueWithGoogle": "Mit Google fortfahren",
+    "phoneNumber": "Telefonnummer",
+    "signingIn": "Anmelden...",
+    "termsOfService": "Nutzungsbedingungen",
+    "privacyPolicy": "Datenschutzrichtlinie",
+    "agreeTerms": "Durch Fortfahren stimmst du unseren {{terms}} und {{privacy}} zu"
+  },
+  "navigation": {
+    "home": "Startseite",
+    "explore": "Entdecken",
+    "likes": "Gefällt mir",
+    "chat": "Chat",
+    "profile": "Profil"
+  },
+  "home": {
+    "title": "BADDILHA",
+    "addItem": "Artikel hinzufügen",
+    "swipeInstructions": "💚 Rechts zum Liken • ❌ Links zum Überspringen • ⭐ Hoch für Super Like • 👎 Runter zum Nicht mögen",
+    "noMoreItems": "Keine Artikel mehr! 😅",
+    "noMoreItemsDesc": "Du hast alle verfügbaren Artikel in deiner Umgebung gesehen. Schau später für neue Artikel vorbei!",
+    "itemLiked": "Artikel geliked! 💚",
+    "itemLikedDesc": "Du möchtest gegen {{itemName}} tauschen",
+    "itemPassed": "Artikel übersprungen",
+    "superLike": "Super Like! ⭐",
+    "superLikeDesc": "Du hast {{itemName}} super geliked!",
+    "noSuperLikes": "Keine Super Likes mehr",
+    "noSuperLikesDesc": "Du hast alle deine Super Likes für heute verwendet. Komm morgen wieder!",
+    "itemDisliked": "Artikel nicht gemocht",
+    "itemDislikedDesc": "Du bist nicht interessiert an {{itemName}}"
+  },
+  "explore": {
+    "title": "Entdecken",
+    "subtitle": "Entdecke Artikel zum Tauschen in deiner Umgebung",
+    "searchPlaceholder": "Suche Artikel, Marken, Kategorien...",
+    "clearFilters": "Alle Filter löschen",
+    "itemsFound": "{{count}} Artikel gefunden",
+    "itemsFoundIn": "{{count}} Artikel in {{category}} gefunden",
+    "itemsFoundFor": "{{count}} Artikel für \"{{query}}\" gefunden",
+    "noItemsFound": "Keine Artikel gefunden",
+    "noItemsFoundDesc": "Versuche deine Suche oder Filter anzupassen",
+    "viewItem": "Artikel anzeigen",
+    "viewItemDesc": "Dies zeigt Details für {{itemName}}",
+    "categories": {
+      "gaming": "Gaming",
+      "electronics": "Elektronik",
+      "collectibles": "Sammlerstücke",
+      "accessories": "Zubehör",
+      "clothing": "Kleidung",
+      "books": "Bücher",
+      "sports": "Sport",
+      "other": "Andere"
+    }
+  },
+  "likes": {
+    "title": "Meine Likes",
+    "subtitle": "Artikel die dir gefallen haben und potenzielle Matches",
+    "totalLikes": "Gesamte Likes",
+    "matches": "Matches",
+    "pending": "Ausstehend",
+    "noLikesYet": "Noch keine Likes",
+    "noLikesYetDesc": "Fang an zu swipen um Artikel zu liken und Matches zu bekommen!",
+    "itemDetails": "Artikeldetails",
+    "itemDetailsDesc": "Dies zeigt Details für {{itemName}}",
+    "openChat": "Chat öffnen",
+    "openChatDesc": "Fang an über {{itemName}} zu chatten",
+    "noMatchYet": "Noch kein Match",
+    "noMatchYetDesc": "Warte bis der Besitzer einen deiner Artikel liked",
+    "removeLike": "Like entfernen",
+    "removeLikeDesc": "{{itemName}} aus deinen Likes entfernen?",
+    "matchStatus": {
+      "matched": "Gematcht! 💚",
+      "pending": "Warten... ⏳",
+      "rejected": "Kein Match ❌"
+    },
+    "chatNow": "Jetzt chatten",
+    "waitingForMatch": "Warten auf Match",
+    "timeAgo": {
+      "justNow": "Gerade eben",
+      "hoursAgo": "vor {{hours}}h",
+      "daysAgo": "vor {{days}}d"
+    }
+  },
+  "chat": {
+    "title": "Chats",
+    "subtitle": "Chatte mit Menschen über Artikel-Tausch",
+    "newChat": "Neuer Chat",
+    "newChatDesc": "Diese Funktion wird in der nächsten Phase implementiert",
+    "noChatsYet": "Noch keine Chats",
+    "noChatsYetDesc": "Fang an zu swipen um Artikel zu finden und Matches zu bekommen!",
+    "online": "Online",
+    "offline": "Offline"
+  },
+  "profile": {
+    "title": "Profil",
+    "addNewItem": "Neuen Artikel hinzufügen",
+    "addNewItemDesc": "Liste einen Artikel zum Tauschen auf",
+    "editProfile": "Profil bearbeiten",
+    "editProfileDesc": "Aktualisiere deine Informationen",
+    "createProfile": "Profil erstellen",
+    "createProfileDesc": "Richte deine Präferenzen ein",
+    "myItems": "Meine Artikel",
+    "viewAll": "Alle anzeigen",
+    "noItemsYet": "Du hast noch keine Artikel hinzugefügt.",
+    "addFirstItem": "Füge deinen ersten Artikel hinzu",
+    "accountInfo": "Kontoinformationen",
+    "location": "Standort",
+    "memberSince": "Mitglied seit",
+    "accountStatus": "Kontostatus",
+    "verified": "Verifiziert",
+    "accountActions": "Kontoaktionen",
+    "logout": "Abmelden",
+    "logoutConfirm": "Bist du sicher, dass du dich abmelden möchtest?",
+    "deleteAccount": "Konto löschen",
+    "deleteAccountConfirm": "Diese Aktion kann nicht rückgängig gemacht werden. Bist du sicher, dass du dein Konto dauerhaft löschen möchtest?",
+    "deleteAccountType": "Tippe \"LÖSCHEN\" um die Kontolöschung zu bestätigen",
+    "stats": {
+      "rating": "Bewertung",
+      "swaps": "Tausche",
+      "items": "Artikel"
+    }
+  },
+  "settings": {
+    "title": "Einstellungen",
+    "language": "Sprache",
+    "theme": {
+      "title": "Design",
+      "light": "Hell",
+      "dark": "Dunkel",
+      "system": "System",
+      "mode": "{{mode}} Modus"
+    },
+    "notifications": "Benachrichtigungen",
+    "privacy": "Datenschutz",
+    "about": "Über",
+    "version": "Version",
+    "languages": {
+      "english": "English",
+      "arabic": "العربية",
+      "spanish": "Español",
+      "french": "Français",
+      "german": "Deutsch",
+      "portuguese": "Português"
+    },
+    "themes": {
+      "light": "Hell",
+      "dark": "Dunkel",
+      "system": "System"
+    }
+  },
+  "errors": {
+    "networkError": "Netzwerkfehler. Bitte überprüfe deine Verbindung.",
+    "serverError": "Serverfehler. Bitte versuche es später erneut.",
+    "unknownError": "Ein unbekannter Fehler ist aufgetreten.",
+    "validationError": "Bitte überprüfe deine Eingabe und versuche es erneut."
+  }
+}

@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Alert,
   Keyboard,
@@ -10,10 +10,12 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useLanguage } from "../../src/contexts/LanguageContext";
 
 export default function OTPVerificationScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { t, isRTL } = useLanguage();
   const { phoneNumber } = useLocalSearchParams<{ phoneNumber: string }>();
 
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);

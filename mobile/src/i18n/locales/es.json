@@ -1,0 +1,181 @@
+{
+  "common": {
+    "loading": "Cargando...",
+    "error": "Error",
+    "success": "Éxito",
+    "cancel": "Cancelar",
+    "ok": "OK",
+    "yes": "Sí",
+    "no": "No",
+    "save": "Guardar",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "back": "Atrás",
+    "next": "Siguiente",
+    "done": "Hecho",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "clear": "Limpiar",
+    "refresh": "Actualizar",
+    "retry": "Reintentar"
+  },
+  "auth": {
+    "welcome": "Bienvenido a Baddilha",
+    "tagline": "Descubre artículos increíbles en tu área e intercambia con personas que comparten tus intereses",
+    "continueWithGoogle": "Continuar con Google",
+    "phoneNumber": "Número de Teléfono",
+    "signingIn": "Iniciando sesión...",
+    "termsOfService": "Términos de Servicio",
+    "privacyPolicy": "Política de Privacidad",
+    "agreeTerms": "Al continuar, aceptas nuestros {{terms}} y {{privacy}}"
+  },
+  "navigation": {
+    "home": "Inicio",
+    "explore": "Explorar",
+    "likes": "Me gusta",
+    "chat": "Chat",
+    "profile": "Perfil"
+  },
+  "home": {
+    "title": "BADDILHA",
+    "addItem": "Agregar Artículo",
+    "swipeInstructions": "💚 Derecha para gustar • ❌ Izquierda para pasar • ⭐ Arriba para super me gusta • 👎 Abajo para no gustar",
+    "noMoreItems": "¡No hay más artículos! 😅",
+    "noMoreItemsDesc": "Has visto todos los artículos disponibles en tu área. ¡Vuelve más tarde para ver artículos nuevos!",
+    "itemLiked": "¡Artículo gustado! 💚",
+    "itemLikedDesc": "Quieres intercambiar por {{itemName}}",
+    "itemPassed": "Artículo pasado",
+    "superLike": "¡Super me gusta! ⭐",
+    "superLikeDesc": "¡Le diste super me gusta a {{itemName}}!",
+    "noSuperLikes": "No quedan super me gusta",
+    "noSuperLikesDesc": "Has usado todos tus super me gusta de hoy. ¡Vuelve mañana!",
+    "itemDisliked": "Artículo no gustado",
+    "itemDislikedDesc": "No estás interesado en {{itemName}}"
+  },
+  "explore": {
+    "title": "Explorar",
+    "subtitle": "Descubre artículos para intercambiar en tu área",
+    "searchPlaceholder": "Buscar artículos, marcas, categorías...",
+    "clearFilters": "Limpiar todos los filtros",
+    "itemsFound": "{{count}} artículo{{count, plural, one {} other {s}}} encontrado{{count, plural, one {} other {s}}}",
+    "itemsFoundIn": "{{count}} artículo{{count, plural, one {} other {s}}} encontrado{{count, plural, one {} other {s}}} en {{category}}",
+    "itemsFoundFor": "{{count}} artículo{{count, plural, one {} other {s}}} encontrado{{count, plural, one {} other {s}}} para \"{{query}}\"",
+    "noItemsFound": "No se encontraron artículos",
+    "tryDifferentSearch": "Prueba una búsqueda diferente o limpia los filtros",
+    "noItemsFoundDesc": "Intenta ajustar tu búsqueda o filtros",
+    "viewItem": "Ver Artículo",
+    "viewItemDesc": "Esto mostrará detalles para {{itemName}}",
+    "categories": {
+      "gaming": "Juegos",
+      "electronics": "Electrónicos",
+      "collectibles": "Coleccionables",
+      "accessories": "Accesorios",
+      "clothing": "Ropa",
+      "books": "Libros",
+      "sports": "Deportes",
+      "other": "Otros"
+    }
+  },
+  "likes": {
+    "title": "Mis Me gusta",
+    "subtitle": "Artículos que te gustaron y coincidencias potenciales",
+    "totalLikes": "Total de Me gusta",
+    "matches": "Coincidencias",
+    "pending": "Pendiente",
+    "noLikesYet": "Aún no hay me gusta",
+    "noLikesYetDesc": "¡Comienza a deslizar para dar me gusta a artículos y conseguir coincidencias!",
+    "itemDetails": "Detalles del Artículo",
+    "itemDetailsDesc": "Esto mostrará los detalles de {{itemName}}",
+    "openChat": "Abrir Chat",
+    "openChatDesc": "Comienza a chatear sobre {{itemName}}",
+    "noMatchYet": "Aún no hay coincidencia",
+    "noMatchYetDesc": "Espera a que el propietario le dé me gusta a uno de tus artículos",
+    "removeLike": "Quitar Me gusta",
+    "removeLikeDesc": "¿Quitar {{itemName}} de tus me gusta?",
+    "matchStatus": {
+      "matched": "¡Coincidencia! 💚",
+      "pending": "Esperando... ⏳",
+      "rejected": "Sin coincidencia ❌"
+    },
+    "chatNow": "Chatear Ahora",
+    "waitingForMatch": "Esperando Coincidencia",
+    "timeAgo": {
+      "justNow": "Ahora mismo",
+      "hoursAgo": "hace {{hours}}h",
+      "daysAgo": "hace {{days}}d"
+    }
+  },
+  "chat": {
+    "title": "Chats",
+    "subtitle": "Chatea con personas sobre intercambios de artículos",
+    "newChat": "Nuevo Chat",
+    "newChatDesc": "Esta función se implementará en la siguiente fase",
+    "noChatsYet": "Aún no hay chats",
+    "noChatsYetDesc": "¡Comienza a deslizar para encontrar artículos y conseguir coincidencias!",
+    "online": "En línea",
+    "offline": "Desconectado"
+  },
+  "profile": {
+    "title": "Perfil",
+    "addNewItem": "Agregar Nuevo Artículo",
+    "addNewItemDesc": "Lista un artículo para intercambio",
+    "editProfile": "Editar Perfil",
+    "editProfileDesc": "Actualiza tu información",
+    "createProfile": "Crear Perfil",
+    "createProfileDesc": "Configura tus preferencias",
+    "myItems": "Mis Artículos",
+    "viewAll": "Ver Todo",
+    "noItemsYet": "Aún no has agregado ningún artículo.",
+    "addFirstItem": "Agrega tu primer artículo",
+    "accountInfo": "Información de la Cuenta",
+    "location": "Ubicación",
+    "memberSince": "Miembro desde",
+    "accountStatus": "Estado de la Cuenta",
+    "verified": "Verificado",
+    "accountActions": "Acciones de la Cuenta",
+    "logout": "Cerrar Sesión",
+    "logoutConfirm": "¿Estás seguro de que quieres cerrar sesión?",
+    "deleteAccount": "Eliminar Cuenta",
+    "deleteAccountConfirm": "Esta acción no se puede deshacer. ¿Estás seguro de que quieres eliminar permanentemente tu cuenta?",
+    "deleteAccountType": "Escribe \"ELIMINAR\" para confirmar la eliminación de la cuenta",
+    "stats": {
+      "rating": "Calificación",
+      "swaps": "Intercambios",
+      "items": "Artículos"
+    }
+  },
+  "settings": {
+    "title": "Configuración",
+    "language": "Idioma",
+    "theme": {
+      "title": "Tema",
+      "light": "Claro",
+      "dark": "Oscuro",
+      "system": "Sistema",
+      "mode": "Modo {{mode}}"
+    },
+    "notifications": "Notificaciones",
+    "privacy": "Privacidad",
+    "about": "Acerca de",
+    "version": "Versión",
+    "languages": {
+      "english": "English",
+      "arabic": "العربية",
+      "spanish": "Español",
+      "french": "Français",
+      "german": "Deutsch",
+      "portuguese": "Português"
+    },
+    "themes": {
+      "light": "Claro",
+      "dark": "Oscuro",
+      "system": "Sistema"
+    }
+  },
+  "errors": {
+    "networkError": "Error de red. Por favor verifica tu conexión.",
+    "serverError": "Error del servidor. Por favor intenta más tarde.",
+    "unknownError": "Ocurrió un error desconocido.",
+    "validationError": "Por favor verifica tu entrada e intenta de nuevo."
+  }
+}

@@ -1,42 +1,50 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import React from "react";
-import { View } from "react-native";
+import { useTheme } from "../../src/contexts/ThemeContext";
+import { useLanguage } from "../../src/contexts/LanguageContext";
+import { getThemeColors } from "../../utils/theme";
 
-export default function TabLayout() {
+function TabLayoutContent() {
+  const { isDark } = useTheme();
+  const { t, isRTL } = useLanguage();
+  const colors = getThemeColors(isDark);
+
   return (
     <Tabs
       screenOptions={{
         headerShown: false, // Hide header for all tabs
+        tabBarShowLabel: false, // Hide tab labels
         tabBarActiveTintColor: "#FD297B", // Tinder pink
-        tabBarInactiveTintColor: "#9CA3AF", // Better gray
+        tabBarInactiveTintColor: colors.textTertiary,
         tabBarStyle: {
-          backgroundColor: 'white',
+          backgroundColor: colors.tabBar,
           borderTopWidth: 0, // Remove default border
-          shadowColor: '#000',
+          borderTopColor: colors.tabBarBorder,
+          shadowColor: isDark ? "#000" : "#000",
           shadowOffset: {
             width: 0,
             height: -2,
           },
-          shadowOpacity: 0.1,
+          shadowOpacity: isDark ? 0.3 : 0.1,
           shadowRadius: 8,
           elevation: 10, // Android shadow
-          paddingBottom: 8,
-          paddingTop: 8,
-          height: 70,
-          borderTopLeftRadius: 20,
-          borderTopRightRadius: 20,
+          paddingBottom: 4,
+          paddingTop: 4,
+          height: 50,
+          flexDirection: isRTL ? "row-reverse" : "row",
         },
         tabBarLabelStyle: {
           fontSize: 11,
-          fontWeight: '600',
+          fontWeight: "600",
           marginTop: 4,
         },
         tabBarIconStyle: {
           marginBottom: 2,
         },
         tabBarItemStyle: {
-          paddingVertical: 4,
+          paddingVertical: 2,
+          paddingHorizontal: 8,
         },
         // Smooth tab transitions
       }}
@@ -44,78 +52,72 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Swap",
+          title: t("navigation.home"),
           tabBarIcon: ({ color, size, focused }) => (
-            <View className={`p-2 rounded-full ${focused ? 'bg-pink-50' : ''}`}>
-              <Ionicons 
-                name={focused ? "swap-horizontal" : "swap-horizontal-outline"} 
-                size={size} 
-                color={color} 
-              />
-            </View>
+            <Ionicons
+              name={focused ? "swap-horizontal" : "swap-horizontal-outline"}
+              size={18}
+              color={color}
+            />
           ),
         }}
       />
       <Tabs.Screen
         name="explore"
         options={{
-          title: "Explore",
+          title: t("navigation.explore"),
           tabBarIcon: ({ color, size, focused }) => (
-            <View className={`p-2 rounded-full ${focused ? 'bg-pink-50' : ''}`}>
-              <Ionicons 
-                name={focused ? "search" : "search-outline"} 
-                size={size} 
-                color={color} 
-              />
-            </View>
+            <Ionicons
+              name={focused ? "search" : "search-outline"}
+              size={18}
+              color={color}
+            />
           ),
         }}
       />
       <Tabs.Screen
         name="likes"
         options={{
-          title: "Likes",
+          title: t("navigation.likes"),
           tabBarIcon: ({ color, size, focused }) => (
-            <View className={`p-2 rounded-full ${focused ? 'bg-pink-50' : ''}`}>
-              <Ionicons 
-                name={focused ? "heart" : "heart-outline"} 
-                size={size} 
-                color={color} 
-              />
-            </View>
+            <Ionicons
+              name={focused ? "heart" : "heart-outline"}
+              size={18}
+              color={color}
+            />
           ),
         }}
       />
       <Tabs.Screen
         name="chat"
         options={{
-          title: "Chat",
+          title: t("navigation.chat"),
           tabBarIcon: ({ color, size, focused }) => (
-            <View className={`p-2 rounded-full ${focused ? 'bg-pink-50' : ''}`}>
-              <Ionicons 
-                name={focused ? "chatbubbles" : "chatbubbles-outline"} 
-                size={size} 
-                color={color} 
-              />
-            </View>
+            <Ionicons
+              name={focused ? "chatbubbles" : "chatbubbles-outline"}
+              size={18}
+              color={color}
+            />
           ),
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
-          title: "Profile",
+          title: t("navigation.profile"),
           tabBarIcon: ({ color, size, focused }) => (
-            <View className={`p-2 rounded-full ${focused ? 'bg-pink-50' : ''}`}>
-              <Ionicons 
-                name={focused ? "person" : "person-outline"} 
-                size={size} 
-                color={color} 
-              />
-            </View>
+            <Ionicons
+              name={focused ? "person" : "person-outline"}
+              size={18}
+              color={color}
+            />
           ),
         }}
       />
     </Tabs>
   );
+}
+
+export default function TabLayout() {
+  return <TabLayoutContent />;
 }

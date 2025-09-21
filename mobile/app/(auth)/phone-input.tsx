@@ -12,10 +12,12 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useLanguage } from "../../src/contexts/LanguageContext";
 
 export default function PhoneInputScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { t, isRTL } = useLanguage();
   const [phoneNumber, setPhoneNumber] = useState("");
   const [selectedCountry, setSelectedCountry] = useState({
     code: "+1",
@@ -114,8 +116,11 @@ export default function PhoneInputScreen() {
           <TouchableOpacity onPress={() => router.back()}>
             <Ionicons name="arrow-back" size={24} color="#374151" />
           </TouchableOpacity>
-          <Text className="text-gray-800 text-lg font-semibold">
-            Phone Number
+          <Text
+            className="text-gray-800 text-lg font-semibold"
+            style={{ textAlign: isRTL ? "right" : "center" }}
+          >
+            {t("auth.phoneNumber")}
           </Text>
           <View className="w-6" />
         </View>

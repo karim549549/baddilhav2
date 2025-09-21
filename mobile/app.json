@@ -8,13 +8,8 @@
     "scheme": "baddilha",
     "userInterfaceStyle": "automatic",
     "linking": {
-      "schemes": [
-        "baddilha"
-      ],
-      "prefixes": [
-        "baddilha://",
-        "https://baddilhav2.vercel.app"
-      ]
+      "schemes": ["baddilha"],
+      "prefixes": ["baddilha://", "https://baddilhav2.vercel.app"]
     },
     "newArchEnabled": true,
     "ios": {
@@ -47,7 +42,8 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
-      ]
+      ],
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true

@@ -1,48 +1,27 @@
-import { AntDesign, FontAwesome, Ionicons } from "@expo/vector-icons";
+import { AntDesign, Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { useRouter } from "expo-router";
 import React, { useState } from "react";
-import { Text, TouchableOpacity, View, Alert } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
+import { useLanguage } from "../../src/contexts/LanguageContext";
 import { gradientColors } from "../../utils/theme";
-import { AuthService } from "../../src/services/auth.service";
-import { ApiError } from "../../src/types";
 
-export default function AuthScreen() {
-  const router = useRouter();
+function AuthScreenContent() {
   const insets = useSafeAreaInsets();
-  const [loading, setLoading] = useState<string | null>(null);
+  const router = useRouter();
+  const { t, isRTL } = useLanguage();
+  const [loading, setLoading] = useState<boolean>(false);
 
-  const handleProviderAuth = async (provider: string) => {
-    console.log(`Auth with ${provider}`);
-
-    if (provider === "phone") {
-      router.push("/(auth)/phone-input");
-    } else if (provider === "google") {
-      setLoading("google");
-      try {
-        // Initiate Google OAuth flow - opens browser
-        await AuthService.initiateGoogleAuth();
-
-        // The actual OAuth response will come via deep link
-        // The deep link handler will process the response
-        console.log("🔄 OAuth flow initiated, waiting for deep link...");
-      } catch (error) {
-        const apiError = error as ApiError;
-        Alert.alert(
-          "Google Auth Error",
-          `Status: ${apiError.statusCode}\nMessage: ${apiError.message}`
-        );
-      } finally {
-        setLoading(null);
-      }
-    } else {
-      // TODO: Implement Apple auth logic
-      Alert.alert(
-        "Coming Soon",
-        "Apple authentication will be available soon!"
-      );
-    }
+  const HandleGoogleAuth = () => {
+    setLoading(true);
+    // Simulate auth process
+    setTimeout(() => {
+      setLoading(false);
+      console.log("Google auth clicked - redirecting to home");
+      // Redirect to home page
+      router.replace("/(tabs)");
+    }, 1000);
   };
 
   return (
@@ -57,15 +36,20 @@ export default function AuthScreen() {
       }}
     >
       {/* Logo and App Name - Centered */}
-      <View className="flex-row items-center justify-center mb-8">
+      <View
+        className={`flex-row items-center justify-center mb-8 ${isRTL ? "flex-row-reverse" : ""}`}
+      >
         <Ionicons name="swap-horizontal" size={48} color="white" />
-        <Text className="text-white text-5xl font-bold ml-2">BADDILHA</Text>
+        <Text
+          className={`text-white text-5xl font-bold ${isRTL ? "mr-2" : "ml-2"}`}
+        >
+          {t("home.title")}
+        </Text>
       </View>
 
       {/* Tagline */}
       <Text className="text-white text-lg text-center px-8 mb-16">
-        Discover amazing items in your area and swap with people who share your
-        interests
+        {t("auth.tagline")}
       </Text>
 
       {/* Bottom Section - Aligned to bottom */}
@@ -78,58 +62,26 @@ export default function AuthScreen() {
           paddingHorizontal: 24,
         }}
       >
-        {/* Auth Providers */}
+        {/* Google Button Only */}
         <View className="w-full mb-6">
           <TouchableOpacity
+            onPress={HandleGoogleAuth}
+            disabled={loading}
             className="w-full py-4 px-6 bg-white rounded-full flex-row items-center justify-center shadow-lg my-1"
-            onPress={() => handleProviderAuth("google")}
-            disabled={loading === "google"}
             style={{
               shadowColor: "#000",
               shadowOffset: { width: 0, height: 2 },
               shadowOpacity: 0.1,
               shadowRadius: 4,
               elevation: 3,
-              opacity: loading === "google" ? 0.7 : 1,
+              opacity: loading ? 0.7 : 1,
             }}
           >
             <AntDesign name="google" size={20} color="#DB4437" />
-            <Text className="text-gray-800 text-base font-semibold ml-3">
-              {loading === "google" ? "Testing API..." : "Continue with Google"}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            className="w-full py-4 px-6 bg-white rounded-full flex-row items-center justify-center shadow-lg my-1"
-            onPress={() => handleProviderAuth("apple")}
-            style={{
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.1,
-              shadowRadius: 4,
-              elevation: 3,
-            }}
-          >
-            <FontAwesome name="apple" size={20} color="#000" />
-            <Text className="text-gray-800 text-base font-semibold ml-3">
-              Continue with Apple
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            className="w-full py-4 px-6 bg-white rounded-full flex-row items-center justify-center shadow-lg my-1"
-            onPress={() => handleProviderAuth("phone")}
-            style={{
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.1,
-              shadowRadius: 4,
-              elevation: 3,
-            }}
-          >
-            <Ionicons name="call" size={20} color="#007AFF" />
-            <Text className="text-gray-800 text-base font-semibold ml-3">
-              Continue with Phone
+            <Text
+              className={`text-gray-800 text-base font-semibold ${isRTL ? "mr-3" : "ml-3"}`}
+            >
+              {loading ? t("auth.signingIn") : t("auth.continueWithGoogle")}
             </Text>
           </TouchableOpacity>
         </View>
@@ -137,13 +89,17 @@ export default function AuthScreen() {
         {/* Terms */}
         <View className="w-full px-4">
           <Text className="text-white text-xs text-center leading-5">
-            By continuing, you agree to our{" "}
-            <Text className="underline font-semibold">Terms of Service</Text>
-            {" and "}
-            <Text className="underline font-semibold">Privacy Policy</Text>
+            {t("auth.agreeTerms", {
+              terms: t("auth.termsOfService"),
+              privacy: t("auth.privacyPolicy"),
+            })}
           </Text>
         </View>
       </View>
     </LinearGradient>
   );
+}
+
+export default function AuthScreen() {
+  return <AuthScreenContent />;
 }

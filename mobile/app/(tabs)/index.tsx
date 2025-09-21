@@ -6,133 +6,162 @@ import Swiper from "react-native-deck-swiper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import ItemCard from "../../components/ItemCard";
 import { mockItems } from "../../data/mockDataNew";
+import { useLanguage } from "../../src/contexts/LanguageContext";
+import { useTheme } from "../../src/contexts/ThemeContext";
 import { MockItem, SwipeDirection } from "../../types";
+import { getThemeColors } from "../../utils/theme";
 
 const { width, height } = Dimensions.get("window");
 
-export default function HomeScreen() {
+function HomeScreenContent() {
   const [cards, setCards] = useState<MockItem[]>(mockItems);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [superLikesRemaining, setSuperLikesRemaining] = useState(5);
   const swiperRef = useRef(null);
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { isDark } = useTheme();
+  const { t, isRTL } = useLanguage();
+  const colors = getThemeColors(isDark);
 
-  const handleSwipe = useCallback((direction: SwipeDirection, swipedItem: MockItem) => {
-    console.log(`Swiped ${direction} on item: ${swipedItem.name}`);
-    
-    // Handle different swipe directions
-    switch (direction) {
-      case SwipeDirection.RIGHT:
-        // Like - want to swap
-        Alert.alert(
-          "Item Liked! 💚",
-          `You want to swap for ${swipedItem.name}`,
-          [{ text: "OK" }]
-        );
-        break;
-        
-      case SwipeDirection.LEFT:
-        // Pass - not interested
-        console.log("Item passed");
-        break;
-        
-      case SwipeDirection.UP:
-        // Super Like
-        if (superLikesRemaining > 0) {
-          setSuperLikesRemaining(prev => prev - 1);
+  const handleSwipe = useCallback(
+    (direction: SwipeDirection, swipedItem: MockItem) => {
+      console.log(`Swiped ${direction} on item: ${swipedItem.name}`);
+
+      // Handle different swipe directions
+      switch (direction) {
+        case SwipeDirection.RIGHT:
+          // Like - want to swap
           Alert.alert(
-            "Super Like! ⭐",
-            `You super liked ${swipedItem.name}!`,
-            [{ text: "OK" }]
+            t("home.itemLiked"),
+            t("home.itemLikedDesc", { itemName: swipedItem.name }),
+            [{ text: t("common.ok") }]
           );
-        } else {
+          break;
+
+        case SwipeDirection.LEFT:
+          // Pass - not interested
+          console.log(t("home.itemPassed"));
+          break;
+
+        case SwipeDirection.UP:
+          // Super Like
+          if (superLikesRemaining > 0) {
+            setSuperLikesRemaining((prev) => prev - 1);
+            Alert.alert(
+              t("home.superLike"),
+              t("home.superLikeDesc", { itemName: swipedItem.name }),
+              [{ text: t("common.ok") }]
+            );
+          } else {
+            Alert.alert(t("home.noSuperLikes"), t("home.noSuperLikesDesc"), [
+              { text: t("common.ok") },
+            ]);
+          }
+          break;
+
+        case SwipeDirection.DOWN:
+          // Dislike/Block
           Alert.alert(
-            "No Super Likes Left",
-            "You've used all your super likes for today. Come back tomorrow!",
-            [{ text: "OK" }]
+            t("home.itemDisliked"),
+            t("home.itemDislikedDesc", { itemName: swipedItem.name }),
+            [{ text: t("common.ok") }]
           );
-        }
-        break;
-        
-      case SwipeDirection.DOWN:
-        // Dislike/Block
-        Alert.alert(
-          "Item Disliked",
-          `You're not interested in ${swipedItem.name}`,
-          [{ text: "OK" }]
-        );
-        break;
-    }
-    
-    // Move to next card
-    setCurrentIndex(prev => prev + 1);
-  }, [superLikesRemaining]);
+          break;
+      }
+
+      // Move to next card
+      setCurrentIndex((prev) => prev + 1);
+    },
+    [superLikesRemaining]
+  );
 
   const handleCardIndexChange = useCallback((index: number) => {
     setCurrentIndex(index);
   }, []);
 
   const handleSwipedAll = useCallback(() => {
-    Alert.alert(
-      "No More Items! 😅",
-      "You've seen all available items in your area. Check back later for new items!",
-      [
-        {
-          text: "Refresh",
-          onPress: () => {
-            setCards([...mockItems]);
-            setCurrentIndex(0);
-          }
+    Alert.alert(t("home.noMoreItems"), t("home.noMoreItemsDesc"), [
+      {
+        text: t("common.refresh"),
+        onPress: () => {
+          setCards([...mockItems]);
+          setCurrentIndex(0);
         },
-        { text: "OK" }
-      ]
-    );
-  }, []);
+      },
+      { text: t("common.ok") },
+    ]);
+  }, [t]);
 
-  const renderCard = useCallback((item: MockItem) => {
-    return <ItemCard item={item} isFirst={currentIndex === 0} />;
-  }, [currentIndex]);
+  const renderCard = useCallback(
+    (item: MockItem) => {
+      return <ItemCard item={item} isFirst={currentIndex === 0} />;
+    },
+    [currentIndex]
+  );
 
   const handleAddItem = () => {
-    router.push('/add-item');
+    router.push("/add-item");
   };
 
-
-
   return (
-    <View className="flex-1 bg-gray-50" style={{ paddingBottom: insets.bottom }}>
+    <View
+      className="flex-1"
+      style={{
+        paddingBottom: insets.bottom,
+        backgroundColor: colors.backgroundSecondary,
+      }}
+    >
       {/* Top Bar */}
-      <View 
-        style={{ 
-          backgroundColor: 'white',
+      <View
+        style={{
+          backgroundColor: colors.card,
           borderBottomWidth: 1,
-          borderBottomColor: '#E5E7EB',
+          borderBottomColor: colors.border,
           paddingTop: insets.top + 10,
           paddingBottom: 20,
           paddingHorizontal: 20,
         }}
       >
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
           {/* Logo */}
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <View
+            style={{
+              flexDirection: isRTL ? "row-reverse" : "row",
+              alignItems: "center",
+            }}
+          >
             <Ionicons name="swap-horizontal" size={24} color="#FD297B" />
-            <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#1F2937', marginLeft: 12 }}>
-              BADDILHA
+            <Text
+              style={{
+                fontSize: 20,
+                fontWeight: "bold",
+                color: colors.text,
+                marginLeft: isRTL ? 0 : 12,
+                marginRight: isRTL ? 12 : 0,
+              }}
+            >
+              {t("home.title")}
             </Text>
           </View>
-          
+
           {/* Add Item Button */}
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={handleAddItem}
             style={{
               width: 40,
               height: 40,
-              backgroundColor: '#FD297B',
+              backgroundColor: "#FD297B",
               borderRadius: 20,
-              alignItems: 'center',
-              justifyContent: 'center',
-              shadowColor: '#000',
+              alignItems: "center",
+              justifyContent: "center",
+              shadowColor: "#000",
               shadowOffset: { width: 0, height: 2 },
               shadowOpacity: 0.1,
               shadowRadius: 4,
@@ -154,10 +183,18 @@ export default function HomeScreen() {
           backgroundColor="transparent"
           cardHorizontalMargin={0}
           cardVerticalMargin={0}
-          onSwipedLeft={(cardIndex) => handleSwipe(SwipeDirection.LEFT, cards[cardIndex])}
-          onSwipedRight={(cardIndex) => handleSwipe(SwipeDirection.RIGHT, cards[cardIndex])}
-          onSwipedTop={(cardIndex) => handleSwipe(SwipeDirection.UP, cards[cardIndex])}
-          onSwipedBottom={(cardIndex) => handleSwipe(SwipeDirection.DOWN, cards[cardIndex])}
+          onSwipedLeft={(cardIndex) =>
+            handleSwipe(SwipeDirection.LEFT, cards[cardIndex])
+          }
+          onSwipedRight={(cardIndex) =>
+            handleSwipe(SwipeDirection.RIGHT, cards[cardIndex])
+          }
+          onSwipedTop={(cardIndex) =>
+            handleSwipe(SwipeDirection.UP, cards[cardIndex])
+          }
+          onSwipedBottom={(cardIndex) =>
+            handleSwipe(SwipeDirection.DOWN, cards[cardIndex])
+          }
           onSwipedAll={handleSwipedAll}
           onSwiped={handleCardIndexChange}
           overlayLabels={{
@@ -248,17 +285,30 @@ export default function HomeScreen() {
       </View>
 
       {/* Swipe Instructions */}
-      <View style={{
-        backgroundColor: 'white',
-        paddingHorizontal: 20,
-        paddingVertical: 16,
-        borderTopWidth: 1,
-        borderTopColor: '#E5E7EB',
-      }}>
-        <Text style={{ textAlign: 'center', color: '#6B7280', fontSize: 14 }}>
-          💚 Right to like • ❌ Left to pass • ⭐ Up to super like • 👎 Down to dislike
+      <View
+        style={{
+          backgroundColor: colors.card,
+          paddingHorizontal: 20,
+          paddingVertical: 16,
+          borderTopWidth: 1,
+          borderTopColor: colors.border,
+        }}
+      >
+        <Text
+          style={{
+            textAlign: isRTL ? "right" : "center",
+            color: colors.textSecondary,
+            fontSize: 14,
+            writingDirection: isRTL ? "rtl" : "ltr",
+          }}
+        >
+          {t("home.swipeInstructions")}
         </Text>
       </View>
     </View>
   );
+}
+
+export default function HomeScreen() {
+  return <HomeScreenContent />;
 }

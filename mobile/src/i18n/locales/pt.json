@@ -1,0 +1,180 @@
+{
+  "common": {
+    "loading": "Carregando...",
+    "error": "Erro",
+    "success": "Sucesso",
+    "cancel": "Cancelar",
+    "ok": "OK",
+    "yes": "Sim",
+    "no": "Não",
+    "save": "Salvar",
+    "edit": "Editar",
+    "delete": "Excluir",
+    "back": "Voltar",
+    "next": "Próximo",
+    "done": "Concluído",
+    "search": "Pesquisar",
+    "filter": "Filtrar",
+    "clear": "Limpar",
+    "refresh": "Atualizar",
+    "retry": "Tentar novamente"
+  },
+  "auth": {
+    "welcome": "Bem-vindo ao Baddilha",
+    "tagline": "Descubra itens incríveis na sua área e troque com pessoas que compartilham seus interesses",
+    "continueWithGoogle": "Continuar com Google",
+    "phoneNumber": "Número de Telefone",
+    "signingIn": "Entrando...",
+    "termsOfService": "Termos de Serviço",
+    "privacyPolicy": "Política de Privacidade",
+    "agreeTerms": "Ao continuar, você concorda com nossos {{terms}} e {{privacy}}"
+  },
+  "navigation": {
+    "home": "Início",
+    "explore": "Explorar",
+    "likes": "Curtidas",
+    "chat": "Chat",
+    "profile": "Perfil"
+  },
+  "home": {
+    "title": "BADDILHA",
+    "addItem": "Adicionar Item",
+    "swipeInstructions": "💚 Direita para curtir • ❌ Esquerda para passar • ⭐ Cima para super curtir • 👎 Baixo para não curtir",
+    "noMoreItems": "Sem mais itens! 😅",
+    "noMoreItemsDesc": "Você viu todos os itens disponíveis na sua área. Volte mais tarde para novos itens!",
+    "itemLiked": "Item curtido! 💚",
+    "itemLikedDesc": "Você quer trocar por {{itemName}}",
+    "itemPassed": "Item passado",
+    "superLike": "Super curtir! ⭐",
+    "superLikeDesc": "Você super curtiu {{itemName}}!",
+    "noSuperLikes": "Sem super curtidas restantes",
+    "noSuperLikesDesc": "Você usou todas as suas super curtidas de hoje. Volte amanhã!",
+    "itemDisliked": "Item não curtido",
+    "itemDislikedDesc": "Você não está interessado em {{itemName}}"
+  },
+  "explore": {
+    "title": "Explorar",
+    "subtitle": "Descubra itens para trocar na sua área",
+    "searchPlaceholder": "Pesquisar itens, marcas, categorias...",
+    "clearFilters": "Limpar todos os filtros",
+    "itemsFound": "{{count}} item{{count, plural, one {} other {s}}} encontrado{{count, plural, one {} other {s}}}",
+    "itemsFoundIn": "{{count}} item{{count, plural, one {} other {s}}} encontrado{{count, plural, one {} other {s}}} em {{category}}",
+    "itemsFoundFor": "{{count}} item{{count, plural, one {} other {s}}} encontrado{{count, plural, one {} other {s}}} para \"{{query}}\"",
+    "noItemsFound": "Nenhum item encontrado",
+    "noItemsFoundDesc": "Tente ajustar sua pesquisa ou filtros",
+    "viewItem": "Ver Item",
+    "viewItemDesc": "Isso mostrará detalhes de {{itemName}}",
+    "categories": {
+      "gaming": "Jogos",
+      "electronics": "Eletrônicos",
+      "collectibles": "Colecionáveis",
+      "accessories": "Acessórios",
+      "clothing": "Roupas",
+      "books": "Livros",
+      "sports": "Esportes",
+      "other": "Outros"
+    }
+  },
+  "likes": {
+    "title": "Minhas Curtidas",
+    "subtitle": "Itens que você curtiu e correspondências potenciais",
+    "totalLikes": "Total de Curtidas",
+    "matches": "Correspondências",
+    "pending": "Pendente",
+    "noLikesYet": "Ainda sem curtidas",
+    "noLikesYetDesc": "Comece a deslizar para curtir itens e conseguir correspondências!",
+    "itemDetails": "Detalhes do Item",
+    "itemDetailsDesc": "Isso mostrará detalhes de {{itemName}}",
+    "openChat": "Abrir Chat",
+    "openChatDesc": "Comece a conversar sobre {{itemName}}",
+    "noMatchYet": "Ainda sem correspondência",
+    "noMatchYetDesc": "Aguarde o proprietário curtir um dos seus itens",
+    "removeLike": "Remover Curtida",
+    "removeLikeDesc": "Remover {{itemName}} das suas curtidas?",
+    "matchStatus": {
+      "matched": "Correspondência! 💚",
+      "pending": "Aguardando... ⏳",
+      "rejected": "Sem correspondência ❌"
+    },
+    "chatNow": "Conversar Agora",
+    "waitingForMatch": "Aguardando Correspondência",
+    "timeAgo": {
+      "justNow": "Agora mesmo",
+      "hoursAgo": "há {{hours}}h",
+      "daysAgo": "há {{days}}d"
+    }
+  },
+  "chat": {
+    "title": "Chats",
+    "subtitle": "Converse com pessoas sobre trocas de itens",
+    "newChat": "Novo Chat",
+    "newChatDesc": "Este recurso será implementado na próxima fase",
+    "noChatsYet": "Ainda sem chats",
+    "noChatsYetDesc": "Comece a deslizar para encontrar itens e conseguir correspondências!",
+    "online": "Online",
+    "offline": "Offline"
+  },
+  "profile": {
+    "title": "Perfil",
+    "addNewItem": "Adicionar Novo Item",
+    "addNewItemDesc": "Liste um item para troca",
+    "editProfile": "Editar Perfil",
+    "editProfileDesc": "Atualize suas informações",
+    "createProfile": "Criar Perfil",
+    "createProfileDesc": "Configure suas preferências",
+    "myItems": "Meus Itens",
+    "viewAll": "Ver Todos",
+    "noItemsYet": "Você ainda não adicionou nenhum item.",
+    "addFirstItem": "Adicione seu primeiro item",
+    "accountInfo": "Informações da Conta",
+    "location": "Localização",
+    "memberSince": "Membro desde",
+    "accountStatus": "Status da Conta",
+    "verified": "Verificado",
+    "accountActions": "Ações da Conta",
+    "logout": "Sair",
+    "logoutConfirm": "Tem certeza de que deseja sair?",
+    "deleteAccount": "Excluir Conta",
+    "deleteAccountConfirm": "Esta ação não pode ser desfeita. Tem certeza de que deseja excluir permanentemente sua conta?",
+    "deleteAccountType": "Digite \"EXCLUIR\" para confirmar a exclusão da conta",
+    "stats": {
+      "rating": "Avaliação",
+      "swaps": "Trocas",
+      "items": "Itens"
+    }
+  },
+  "settings": {
+    "title": "Configurações",
+    "language": "Idioma",
+    "theme": {
+      "title": "Tema",
+      "light": "Claro",
+      "dark": "Escuro",
+      "system": "Sistema",
+      "mode": "Modo {{mode}}"
+    },
+    "notifications": "Notificações",
+    "privacy": "Privacidade",
+    "about": "Sobre",
+    "version": "Versão",
+    "languages": {
+      "english": "English",
+      "arabic": "العربية",
+      "spanish": "Español",
+      "french": "Français",
+      "german": "Deutsch",
+      "portuguese": "Português"
+    },
+    "themes": {
+      "light": "Claro",
+      "dark": "Escuro",
+      "system": "Sistema"
+    }
+  },
+  "errors": {
+    "networkError": "Erro de rede. Verifique sua conexão.",
+    "serverError": "Erro do servidor. Tente novamente mais tarde.",
+    "unknownError": "Ocorreu um erro desconhecido.",
+    "validationError": "Verifique sua entrada e tente novamente."
+  }
+}

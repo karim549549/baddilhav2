@@ -1,0 +1,181 @@
+{
+  "common": {
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "success": "Succès",
+    "cancel": "Annuler",
+    "ok": "OK",
+    "yes": "Oui",
+    "no": "Non",
+    "save": "Enregistrer",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "back": "Retour",
+    "next": "Suivant",
+    "done": "Terminé",
+    "search": "Rechercher",
+    "filter": "Filtrer",
+    "clear": "Effacer",
+    "refresh": "Actualiser",
+    "retry": "Réessayer"
+  },
+  "auth": {
+    "welcome": "Bienvenue sur Baddilha",
+    "tagline": "Découvrez des articles incroyables dans votre région et échangez avec des personnes qui partagent vos intérêts",
+    "continueWithGoogle": "Continuer avec Google",
+    "phoneNumber": "Numéro de Téléphone",
+    "signingIn": "Connexion en cours...",
+    "termsOfService": "Conditions d'Utilisation",
+    "privacyPolicy": "Politique de Confidentialité",
+    "agreeTerms": "En continuant, vous acceptez nos {{terms}} et {{privacy}}"
+  },
+  "navigation": {
+    "home": "Accueil",
+    "explore": "Explorer",
+    "likes": "J'aime",
+    "chat": "Chat",
+    "profile": "Profil"
+  },
+  "home": {
+    "title": "BADDILHA",
+    "addItem": "Ajouter un Article",
+    "swipeInstructions": "💚 Droite pour aimer • ❌ Gauche pour passer • ⭐ Haut pour super like • 👎 Bas pour ne pas aimer",
+    "noMoreItems": "Plus d'articles ! 😅",
+    "noMoreItemsDesc": "Vous avez vu tous les articles disponibles dans votre région. Revenez plus tard pour de nouveaux articles !",
+    "itemLiked": "Article aimé ! 💚",
+    "itemLikedDesc": "Vous voulez échanger contre {{itemName}}",
+    "itemPassed": "Article passé",
+    "superLike": "Super like ! ⭐",
+    "superLikeDesc": "Vous avez super aimé {{itemName}} !",
+    "noSuperLikes": "Plus de super likes",
+    "noSuperLikesDesc": "Vous avez utilisé tous vos super likes pour aujourd'hui. Revenez demain !",
+    "itemDisliked": "Article non aimé",
+    "itemDislikedDesc": "Vous n'êtes pas intéressé par {{itemName}}"
+  },
+  "explore": {
+    "title": "Explorer",
+    "subtitle": "Découvrez des articles à échanger dans votre région",
+    "searchPlaceholder": "Rechercher des articles, marques, catégories...",
+    "clearFilters": "Effacer tous les filtres",
+    "itemsFound": "{{count}} article{{count, plural, one {} other {s}}} trouvé{{count, plural, one {} other {s}}}",
+    "itemsFoundIn": "{{count}} article{{count, plural, one {} other {s}}} trouvé{{count, plural, one {} other {s}}} dans {{category}}",
+    "itemsFoundFor": "{{count}} article{{count, plural, one {} other {s}}} trouvé{{count, plural, one {} other {s}}} pour \"{{query}}\"",
+    "noItemsFound": "Aucun article trouvé",
+    "tryDifferentSearch": "Essayez une recherche différente ou effacez les filtres",
+    "noItemsFoundDesc": "Essayez d'ajuster votre recherche ou vos filtres",
+    "viewItem": "Voir l'article",
+    "viewItemDesc": "Cela affichera les détails pour {{itemName}}",
+    "categories": {
+      "gaming": "Jeux",
+      "electronics": "Électronique",
+      "collectibles": "Collection",
+      "accessories": "Accessoires",
+      "clothing": "Vêtements",
+      "books": "Livres",
+      "sports": "Sports",
+      "other": "Autres"
+    }
+  },
+  "likes": {
+    "title": "Mes J'aime",
+    "subtitle": "Articles que vous avez aimés et correspondances potentielles",
+    "totalLikes": "Total des J'aime",
+    "matches": "Correspondances",
+    "pending": "En attente",
+    "noLikesYet": "Pas encore de j'aime",
+    "noLikesYetDesc": "Commencez à faire défiler pour aimer des articles et obtenir des correspondances !",
+    "itemDetails": "Détails de l'Article",
+    "itemDetailsDesc": "Cela montrera les détails de {{itemName}}",
+    "openChat": "Ouvrir le Chat",
+    "openChatDesc": "Commencez à discuter de {{itemName}}",
+    "noMatchYet": "Pas encore de correspondance",
+    "noMatchYetDesc": "Attendez que le propriétaire aime un de vos articles",
+    "removeLike": "Retirer le J'aime",
+    "removeLikeDesc": "Retirer {{itemName}} de vos j'aime ?",
+    "matchStatus": {
+      "matched": "Correspondance ! 💚",
+      "pending": "En attente... ⏳",
+      "rejected": "Pas de correspondance ❌"
+    },
+    "chatNow": "Discuter Maintenant",
+    "waitingForMatch": "En Attente de Correspondance",
+    "timeAgo": {
+      "justNow": "À l'instant",
+      "hoursAgo": "il y a {{hours}}h",
+      "daysAgo": "il y a {{days}}j"
+    }
+  },
+  "chat": {
+    "title": "Chats",
+    "subtitle": "Discutez avec des personnes sur les échanges d'articles",
+    "newChat": "Nouveau Chat",
+    "newChatDesc": "Cette fonctionnalité sera implémentée dans la prochaine phase",
+    "noChatsYet": "Pas encore de chats",
+    "noChatsYetDesc": "Commencez à faire défiler pour trouver des articles et obtenir des correspondances !",
+    "online": "En ligne",
+    "offline": "Hors ligne"
+  },
+  "profile": {
+    "title": "Profil",
+    "addNewItem": "Ajouter un Nouvel Article",
+    "addNewItemDesc": "Listez un article pour l'échange",
+    "editProfile": "Modifier le Profil",
+    "editProfileDesc": "Mettez à jour vos informations",
+    "createProfile": "Créer un Profil",
+    "createProfileDesc": "Configurez vos préférences",
+    "myItems": "Mes Articles",
+    "viewAll": "Voir Tout",
+    "noItemsYet": "Vous n'avez pas encore ajouté d'articles.",
+    "addFirstItem": "Ajoutez votre premier article",
+    "accountInfo": "Informations du Compte",
+    "location": "Localisation",
+    "memberSince": "Membre depuis",
+    "accountStatus": "Statut du Compte",
+    "verified": "Vérifié",
+    "accountActions": "Actions du Compte",
+    "logout": "Déconnexion",
+    "logoutConfirm": "Êtes-vous sûr de vouloir vous déconnecter ?",
+    "deleteAccount": "Supprimer le Compte",
+    "deleteAccountConfirm": "Cette action ne peut pas être annulée. Êtes-vous sûr de vouloir supprimer définitivement votre compte ?",
+    "deleteAccountType": "Tapez \"SUPPRIMER\" pour confirmer la suppression du compte",
+    "stats": {
+      "rating": "Note",
+      "swaps": "Échanges",
+      "items": "Articles"
+    }
+  },
+  "settings": {
+    "title": "Paramètres",
+    "language": "Langue",
+    "theme": {
+      "title": "Thème",
+      "light": "Clair",
+      "dark": "Sombre",
+      "system": "Système",
+      "mode": "Mode {{mode}}"
+    },
+    "notifications": "Notifications",
+    "privacy": "Confidentialité",
+    "about": "À propos",
+    "version": "Version",
+    "languages": {
+      "english": "English",
+      "arabic": "العربية",
+      "spanish": "Español",
+      "french": "Français",
+      "german": "Deutsch",
+      "portuguese": "Português"
+    },
+    "themes": {
+      "light": "Clair",
+      "dark": "Sombre",
+      "system": "Système"
+    }
+  },
+  "errors": {
+    "networkError": "Erreur réseau. Veuillez vérifier votre connexion.",
+    "serverError": "Erreur serveur. Veuillez réessayer plus tard.",
+    "unknownError": "Une erreur inconnue s'est produite.",
+    "validationError": "Veuillez vérifier votre saisie et réessayer."
+  }
+}
