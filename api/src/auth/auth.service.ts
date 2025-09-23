@@ -1,328 +1,251 @@
 import {
   Injectable,
-  ConflictException,
   UnauthorizedException,
+  ConflictException,
+  NotFoundException,
   BadRequestException,
 } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 import { UserService } from '../user/user.service';
+import { PrismaService } from '../prisma/prisma.service';
+import {
+  SignupDto,
+  LoginDto,
+  AuthResponseDto,
+  RefreshTokenDto,
+  ForgotPasswordDto,
+  ResetPasswordDto,
+} from './dto/auth.dto';
 import { TokenFactory } from './factories/token.factory';
-import { OtpService } from './services/otp.service';
-import { CreateUserDto } from '../user/dto/create-user.dto';
-import { SendOtpDto, VerifyOtpDto } from '../user/dto/otp-verification.dto';
-import { OAuthProvider } from '@prisma/client';
-import { AuthResponse, OtpResponse, GoogleUser } from '../types';
+import * as bcrypt from 'bcrypt';
+import { randomBytes } from 'crypto';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly userService: UserService,
+    private readonly prisma: PrismaService,
+    private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
     private readonly tokenFactory: TokenFactory,
-    private readonly otpService: OtpService,
   ) {}
 
-  async handleGoogleCallback(
-    googleUser: GoogleUser,
-  ): Promise<AuthResponse | { user: GoogleUser; requiresUsername: boolean }> {
-    // Check if this OAuth provider is already linked to a user (LOGIN case)
-    const existingUser = await this.userService.findUserByOAuthProvider(
-      googleUser.provider,
-      googleUser.providerId,
-    );
+  async signup(signupDto: SignupDto): Promise<AuthResponseDto> {
+    const { fullName, email, password, phone, bio } = signupDto;
 
-    if (existingUser) {
-      // OAuth provider already linked - this is a LOGIN, return tokens immediately
-      const tokens = await this.tokenFactory.generateTokenPair(existingUser.id);
-      return {
-        user: {
-          id: existingUser.id,
-          username: existingUser.username,
-          displayName: existingUser.displayName,
-          avatar: existingUser.avatar || undefined,
-          bio: existingUser.bio || undefined,
-          verificationStatus: existingUser.verificationStatus,
-          role: existingUser.role,
-        },
-        tokens,
-      };
-    }
-
-    // OAuth provider not linked - return user data for username selection (REGISTER/LINK case)
-    return {
-      user: googleUser,
-      requiresUsername: true,
-    };
-  }
-
-  async authenticateOAuth(body: {
-    oauthProvider: string;
-    oauthProviderId: string;
-    email?: string;
-    displayName?: string;
-    avatarUrl?: string;
-    username?: string;
-  }): Promise<AuthResponse> {
-    // Step 1: Check if OAuth provider is already linked to a user (LOGIN)
-    const existingOAuthUser = await this.userService.findUserByOAuthProvider(
-      body.oauthProvider,
-      body.oauthProviderId,
-    );
-
-    if (existingOAuthUser) {
-      // OAuth provider already linked - this is a LOGIN
-      const tokens = await this.tokenFactory.generateTokenPair(
-        existingOAuthUser.id,
-      );
-      return {
-        user: {
-          id: existingOAuthUser.id,
-          username: existingOAuthUser.username,
-          displayName: existingOAuthUser.displayName,
-          avatar: existingOAuthUser.avatar || undefined,
-          bio: existingOAuthUser.bio || undefined,
-          verificationStatus: existingOAuthUser.verificationStatus,
-          role: existingOAuthUser.role,
-        },
-        tokens,
-      };
-    }
-
-    // Step 2: Check if user exists with email (LINK OAuth to existing user)
-    if (body.email) {
-      const existingEmailUser = await this.userService.findUserByEmail(
-        body.email,
-      );
-      if (existingEmailUser) {
-        // User exists with this email - LINK the OAuth provider
-        await this.userService.linkOAuthProvider(existingEmailUser.id, {
-          provider: body.oauthProvider,
-          providerId: body.oauthProviderId,
-          accessToken: '', // We'll need to store this properly
-          refreshToken: '',
-        });
-
-        const tokens = await this.tokenFactory.generateTokenPair(
-          existingEmailUser.id,
-        );
-        return {
-          user: {
-            id: existingEmailUser.id,
-            username: existingEmailUser.username,
-            displayName: existingEmailUser.displayName,
-            avatar: existingEmailUser.avatar || undefined,
-            bio: existingEmailUser.bio || undefined,
-            verificationStatus: existingEmailUser.verificationStatus,
-            role: existingEmailUser.role,
-          },
-          tokens,
-        };
-      }
-    }
-
-    // Step 3: Check if username is taken (for new registration)
-    if (body.username) {
-      const usernameExists = await this.userService.findUserByUsername(
-        body.username,
-      );
-      if (usernameExists) {
-        throw new ConflictException('Username is already taken');
-      }
-    }
-
-    // Step 4: Create new user (REGISTER)
-    const createUserDto: CreateUserDto = {
-      username: body.username || body.email?.split('@')[0] || 'user',
-      email: body.email,
-      displayName: body.displayName,
-      avatarUrl: body.avatarUrl,
-      oauthProvider: body.oauthProvider as any,
-      oauthProviderId: body.oauthProviderId,
-      isActive: true,
-    };
-
-    const newUser = await this.userService.createUser(createUserDto);
-    const tokens = await this.tokenFactory.generateTokenPair(newUser.id);
-
-    return {
-      user: {
-        id: newUser.id,
-        username: newUser.username,
-        displayName: newUser.displayName,
-        avatar: newUser.avatar || undefined,
-        bio: newUser.bio || undefined,
-        verificationStatus: newUser.verificationStatus,
-        role: newUser.role,
+    // Check if user already exists
+    const existingUser = await this.prisma.user.findFirst({
+      where: {
+        OR: [{ email }, ...(phone ? [{ phone }] : [])],
       },
-      tokens,
-    };
-  }
-
-  async registerWithPhoneOrEmail(sendOtpDto: SendOtpDto): Promise<OtpResponse> {
-    if (!sendOtpDto.phoneNumber && !sendOtpDto.email) {
-      throw new BadRequestException(
-        'Either phone number or email must be provided',
-      );
-    }
-
-    const identifier = sendOtpDto.phoneNumber || sendOtpDto.email!;
-
-    // Rate limiting is now handled by @nestjs/throttler at the controller level
-
-    // Check if user already exists
-    const existingUser =
-      await this.userService.findUserByUsernameOrEmailOrPhone(
-        undefined,
-        sendOtpDto.email,
-        sendOtpDto.phoneNumber,
-      );
+    });
 
     if (existingUser) {
       throw new ConflictException(
-        'User already exists with this phone number or email',
+        'User with this email or phone already exists',
       );
     }
 
-    // Generate and store OTP
-    const { code, expiresAt } = await this.otpService.generateOtp(
-      sendOtpDto.phoneNumber,
-      sendOtpDto.email,
-    );
-
-    // Rate limiting is handled by @nestjs/throttler
-
-    // TODO: Send OTP via SMS/Email service
-    // For development, we'll log the OTP (remove in production)
-    console.log(`🔐 OTP for ${identifier}: ${code}`);
-
-    return {
-      message: `OTP sent to ${identifier}`,
-      expiresAt,
-      identifier,
-    };
-  }
-
-  async verifyOtpAndRegister(
-    verifyOtpDto: VerifyOtpDto,
-    username: string,
-  ): Promise<AuthResponse> {
-    if (!verifyOtpDto.phoneNumber && !verifyOtpDto.email) {
-      throw new BadRequestException(
-        'Either phone number or email must be provided',
-      );
-    }
-
-    const identifier = verifyOtpDto.phoneNumber || verifyOtpDto.email!;
-
-    // Verify OTP
-    const isValidOtp = await this.otpService.verifyOtp(
-      identifier,
-      verifyOtpDto.otpCode,
-    );
-
-    if (!isValidOtp) {
-      throw new UnauthorizedException('Invalid or expired OTP');
-    }
-
-    // Check if user already exists
-    const existingUser =
-      await this.userService.findUserByUsernameOrEmailOrPhone(
-        username,
-        verifyOtpDto.email,
-        verifyOtpDto.phoneNumber,
-      );
-
-    if (existingUser) {
-      throw new ConflictException(
-        'User already exists with this username, email, or phone number',
-      );
-    }
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 12);
 
     // Create user
-    const createUserDto: CreateUserDto = {
-      username,
-      email: verifyOtpDto.email,
-      phoneNumber: verifyOtpDto.phoneNumber,
-      verificationStatus: 'VERIFIED',
-    };
-
-    const user = await this.userService.createUser(createUserDto);
+    const user = await this.prisma.user.create({
+      data: {
+        fullName,
+        email,
+        phone,
+        bio,
+        hashedPassword,
+      },
+      select: {
+        id: true,
+        email: true,
+        fullName: true,
+        role: true,
+        verificationStatus: true,
+      },
+    });
 
     // Generate tokens
-    const tokens = await this.tokenFactory.generateTokenPair(user.id);
+    const tokens = this.tokenFactory.generateTokenPair(user.id);
 
     return {
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
       user: {
         id: user.id,
-        username: user.username,
-        displayName: user.displayName,
-        avatar: user.avatar || undefined,
-        bio: user.bio || undefined,
-        verificationStatus: user.verificationStatus,
+        email: user.email,
+        fullName: user.fullName,
         role: user.role,
+        verificationStatus: user.verificationStatus,
       },
-      tokens,
     };
   }
 
-  async loginWithOAuth(
-    provider: OAuthProvider,
-    providerId: string,
-  ): Promise<AuthResponse> {
-    const user = await this.userService.findUserByOAuthProvider(
-      provider,
-      providerId,
-    );
+  async login(loginDto: LoginDto): Promise<AuthResponseDto> {
+    const { email, password } = loginDto;
 
-    if (!user) {
-      throw new UnauthorizedException(
-        'User not found with this OAuth provider',
-      );
+    // Find user by email
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+      select: {
+        id: true,
+        email: true,
+        fullName: true,
+        hashedPassword: true,
+        role: true,
+        verificationStatus: true,
+      },
+    });
+
+    if (!user || !user.hashedPassword) {
+      throw new UnauthorizedException('Invalid credentials');
     }
 
-    // User is active by default in our schema
+    // Verify password
+    const isPasswordValid = await bcrypt.compare(password, user.hashedPassword);
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    // Update last active
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { lastActive: new Date() },
+    });
 
     // Generate tokens
-    const tokens = await this.tokenFactory.generateTokenPair(user.id);
+    const tokens = this.tokenFactory.generateTokenPair(user.id);
 
     return {
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
       user: {
         id: user.id,
-        username: user.username,
-        displayName: user.displayName,
-        avatar: user.avatar || undefined,
-        bio: user.bio || undefined,
-        verificationStatus: user.verificationStatus,
+        email: user.email,
+        fullName: user.fullName,
         role: user.role,
+        verificationStatus: user.verificationStatus,
       },
-      tokens,
     };
   }
 
-  async refreshToken(refreshToken: string): Promise<AuthResponse> {
-    const payload = this.tokenFactory.verifyToken(refreshToken, true);
+  async refreshToken(
+    refreshTokenDto: RefreshTokenDto,
+  ): Promise<AuthResponseDto> {
+    const { refreshToken } = refreshTokenDto;
 
-    if (payload.type !== 'refresh') {
-      throw new UnauthorizedException('Invalid token type');
+    try {
+      // Verify refresh token
+      const payload = this.tokenFactory.verifyToken(refreshToken, true);
+
+      // Get user
+      const user = await this.prisma.user.findUnique({
+        where: { id: payload.sub },
+        select: {
+          id: true,
+          email: true,
+          fullName: true,
+          role: true,
+          verificationStatus: true,
+        },
+      });
+
+      if (!user) {
+        throw new UnauthorizedException('User not found');
+      }
+
+      // Generate new tokens
+      const tokens = this.tokenFactory.generateTokenPair(user.id);
+
+      return {
+        accessToken: tokens.accessToken,
+        refreshToken: tokens.refreshToken,
+        user: {
+          id: user.id,
+          email: user.email,
+          fullName: user.fullName,
+          role: user.role,
+          verificationStatus: user.verificationStatus,
+        },
+      };
+    } catch (error) {
+      throw new UnauthorizedException('Invalid refresh token');
     }
+  }
 
-    const user = await this.userService.findUserById(payload.sub);
+  async forgotPassword(
+    forgotPasswordDto: ForgotPasswordDto,
+  ): Promise<{ message: string }> {
+    const { email } = forgotPasswordDto;
+
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+    });
+
     if (!user) {
-      throw new UnauthorizedException('User not found');
+      // Don't reveal if user exists or not
+      return { message: 'If the email exists, a reset link has been sent' };
     }
 
-    // Generate new token pair
-    const tokens = await this.tokenFactory.generateTokenPair(user.id);
+    // Generate reset token
+    const resetToken = randomBytes(32).toString('hex');
+    const resetTokenExpiry = new Date(Date.now() + 3600000); // 1 hour
 
-    return {
-      user: {
-        id: user.id,
-        username: user.username,
-        displayName: user.displayName,
-        avatar: user.avatar || undefined,
-        bio: user.bio || undefined,
-        verificationStatus: user.verificationStatus,
-        role: user.role,
+    // Store reset token in database
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        resetToken,
+        resetTokenExpiry,
       },
-      tokens,
-    };
+    });
+
+    // TODO: Send email with reset link
+    // For now, just return success message
+
+    return { message: 'If the email exists, a reset link has been sent' };
+  }
+
+  async resetPassword(
+    resetPasswordDto: ResetPasswordDto,
+  ): Promise<{ message: string }> {
+    const { token, password } = resetPasswordDto;
+
+    const user = await this.prisma.user.findFirst({
+      where: {
+        resetToken: token,
+        resetTokenExpiry: {
+          gt: new Date(),
+        },
+      },
+    });
+
+    if (!user) {
+      throw new BadRequestException('Invalid or expired reset token');
+    }
+
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(password, 12);
+
+    // Update user password and clear reset token
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        hashedPassword,
+        resetToken: null,
+        resetTokenExpiry: null,
+      },
+    });
+
+    return { message: 'Password reset successfully' };
+  }
+
+  async logout(): Promise<{ message: string }> {
+    // In a more sophisticated setup, you might want to blacklist the token
+    // For now, we'll just return a success message
+    return { message: 'Logged out successfully' };
   }
 }

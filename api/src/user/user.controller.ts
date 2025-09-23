@@ -1,178 +1,111 @@
-import { Controller, Get, Post, Body, Param, Put, Delete, Query } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Body,
+  Param,
+  Query,
+} from '@nestjs/common';
 import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { User } from '@prisma/client';
+import {
+  CreateUserDto,
+  UpdateUserDto,
+  UserResponseDto,
+  UsersResponseDto,
+} from './dto/user.dto';
+import { ApiController } from '../common/decorators/api-controller.decorator';
+import {
+  ApiEndpoint,
+  CommonResponses,
+} from '../common/decorators/api-endpoint.decorator';
 
-@ApiTags('Users')
+@ApiController('Users')
 @Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post()
-  @ApiOperation({ 
+  @ApiEndpoint({
     summary: 'Create a new user',
-    description: 'Create a new user with all required information'
+    method: 'POST',
+    statusCode: 201,
+    useValidation: true,
+    useBusinessValidation: true,
+    responses: [...CommonResponses.created(UserResponseDto)],
   })
-  @ApiResponse({ 
-    status: 201, 
-    description: 'User created successfully',
-    schema: {
-      type: 'object',
-      properties: {
-        success: { type: 'boolean', example: true },
-        message: { type: 'string', example: 'User created successfully' },
-        data: { $ref: '#/components/schemas/User' }
-      }
-    }
-  })
-  @ApiResponse({ status: 409, description: 'User already exists' })
-  @ApiResponse({ status: 400, description: 'Invalid input data' })
-  async createUser(@Body() createUserDto: CreateUserDto): Promise<User> {
+  async createUser(
+    @Body() createUserDto: CreateUserDto,
+  ): Promise<UserResponseDto> {
     return this.userService.createUser(createUserDto);
   }
 
   @Get()
-  @ApiOperation({ 
-    summary: 'Get all users',
-    description: 'Get a paginated list of all users'
-  })
-  @ApiQuery({ name: 'skip', required: false, type: Number, description: 'Number of users to skip' })
-  @ApiQuery({ name: 'take', required: false, type: Number, description: 'Number of users to take' })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'Users retrieved successfully',
-    schema: {
-      type: 'object',
-      properties: {
-        success: { type: 'boolean', example: true },
-        message: { type: 'string', example: 'Users retrieved successfully' },
-        data: {
-          type: 'array',
-          items: { $ref: '#/components/schemas/User' }
-        }
-      }
-    }
+  @ApiEndpoint({
+    summary: 'Get all users with pagination',
+    method: 'GET',
+    responses: [...CommonResponses.ok(UsersResponseDto)],
+    queries: [
+      { name: 'page', required: false, type: Number, example: 1 },
+      { name: 'limit', required: false, type: Number, example: 10 },
+    ],
   })
   async getAllUsers(
-    @Query('skip') skip?: string,
-    @Query('take') take?: string
-  ): Promise<User[]> {
-    const skipNum = skip ? parseInt(skip, 10) : 0;
-    const takeNum = take ? parseInt(take, 10) : 10;
-    return this.userService.getAllUsers(skipNum, takeNum);
-  }
-
-  @Get('count')
-  @ApiOperation({ 
-    summary: 'Get users count',
-    description: 'Get the total number of users'
-  })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'Users count retrieved successfully',
-    schema: {
-      type: 'object',
-      properties: {
-        success: { type: 'boolean', example: true },
-        message: { type: 'string', example: 'Users count retrieved successfully' },
-        data: { type: 'number', example: 150 }
-      }
-    }
-  })
-  async getUsersCount(): Promise<number> {
-    return this.userService.getUsersCount();
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+  ): Promise<UsersResponseDto> {
+    return this.userService.getAllUsers(page, limit);
   }
 
   @Get(':id')
-  @ApiOperation({ 
+  @ApiEndpoint({
     summary: 'Get user by ID',
-    description: 'Get a specific user by their ID'
+    method: 'GET',
+    responses: [
+      ...CommonResponses.ok(UserResponseDto),
+      ...CommonResponses.notFound(),
+    ],
+    params: [
+      { name: 'id', description: 'User ID', example: 'clx1234567890abcdef' },
+    ],
   })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'User retrieved successfully',
-    schema: {
-      type: 'object',
-      properties: {
-        success: { type: 'boolean', example: true },
-        message: { type: 'string', example: 'User retrieved successfully' },
-        data: { $ref: '#/components/schemas/User' }
-      }
-    }
-  })
-  @ApiResponse({ status: 404, description: 'User not found' })
-  async getUserById(@Param('id') id: string): Promise<User | null> {
-    return this.userService.findUserById(id);
-  }
-
-  @Get('username/:username')
-  @ApiOperation({ 
-    summary: 'Get user by username',
-    description: 'Get a specific user by their username'
-  })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'User retrieved successfully',
-    schema: {
-      type: 'object',
-      properties: {
-        success: { type: 'boolean', example: true },
-        message: { type: 'string', example: 'User retrieved successfully' },
-        data: { $ref: '#/components/schemas/User' }
-      }
-    }
-  })
-  @ApiResponse({ status: 404, description: 'User not found' })
-  async getUserByUsername(@Param('username') username: string): Promise<User | null> {
-    return this.userService.findUserByUsername(username);
+  async getUserById(@Param('id') id: string): Promise<UserResponseDto> {
+    return this.userService.getUserById(id);
   }
 
   @Put(':id')
-  @ApiOperation({ 
-    summary: 'Update user',
-    description: 'Update user information'
+  @ApiEndpoint({
+    summary: 'Update user by ID',
+    method: 'PUT',
+    useValidation: true,
+    responses: [
+      ...CommonResponses.ok(UserResponseDto),
+      ...CommonResponses.notFound(),
+      ...CommonResponses.validationError(),
+    ],
+    params: [
+      { name: 'id', description: 'User ID', example: 'clx1234567890abcdef' },
+    ],
   })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'User updated successfully',
-    schema: {
-      type: 'object',
-      properties: {
-        success: { type: 'boolean', example: true },
-        message: { type: 'string', example: 'User updated successfully' },
-        data: { $ref: '#/components/schemas/User' }
-      }
-    }
-  })
-  @ApiResponse({ status: 404, description: 'User not found' })
-  @ApiResponse({ status: 409, description: 'User already exists with this data' })
   async updateUser(
     @Param('id') id: string,
-    @Body() updateData: Partial<CreateUserDto>
-  ): Promise<User> {
-    return this.userService.updateUser(id, updateData);
+    @Body() updateUserDto: UpdateUserDto,
+  ): Promise<UserResponseDto> {
+    return this.userService.updateUser(id, updateUserDto);
   }
 
   @Delete(':id')
-  @ApiOperation({ 
-    summary: 'Delete user',
-    description: 'Delete a user by their ID'
+  @ApiEndpoint({
+    summary: 'Delete user by ID',
+    method: 'DELETE',
+    statusCode: 204,
+    responses: [...CommonResponses.noContent(), ...CommonResponses.notFound()],
+    params: [
+      { name: 'id', description: 'User ID', example: 'clx1234567890abcdef' },
+    ],
   })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'User deleted successfully',
-    schema: {
-      type: 'object',
-      properties: {
-        success: { type: 'boolean', example: true },
-        message: { type: 'string', example: 'User deleted successfully' },
-        data: { type: 'object', example: {} }
-      }
-    }
-  })
-  @ApiResponse({ status: 404, description: 'User not found' })
-  async deleteUser(@Param('id') id: string): Promise<void> {
+  async deleteUser(@Param('id') id: string): Promise<{ message: string }> {
     return this.userService.deleteUser(id);
   }
 }

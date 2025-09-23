@@ -3,8 +3,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
 import { StandardResponseInterceptor } from './common/interceptors/standard-response.interceptor';
-import { setupSwagger } from './config/swagger.config';
-import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
+import { setupSwagger } from './common/config/swagger.config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -31,8 +30,8 @@ async function bootstrap() {
   // Global response interceptor
   app.useGlobalInterceptors(new StandardResponseInterceptor());
 
-  // Global JWT authentication guard
-  app.useGlobalGuards(new JwtAuthGuard(app.get('Reflector')));
+  // Global JWT authentication guard - disabled for now
+  // app.useGlobalGuards(new JwtAuthGuard(app.get('Reflector')));
 
   // Global validation pipe
   app.useGlobalPipes(
@@ -50,7 +49,7 @@ async function bootstrap() {
   // Setup Swagger documentation
   setupSwagger(app);
 
-  const port = process.env.PORT || 3000;
+  const port = process.env.PORT || 4000;
   await app.listen(port);
 
   console.log(`🚀 BADDILHA API is running on: http://localhost:${port}`);

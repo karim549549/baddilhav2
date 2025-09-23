@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { JWT_CONFIG } from '../../libs/constants/jwt.constants';
-import { TokenPayload, TokenPair, Token } from '../../types';
+import { TokenPayload, TokenPair, Token } from '../../types/auth.types';
 
 @Injectable()
 export class TokenFactory {
@@ -16,8 +16,8 @@ export class TokenFactory {
    */
   generateTokenPair(userId: string): TokenPair {
     return {
-      accessToken: this.generateToken(userId, 'access'),
-      refreshToken: this.generateToken(userId, 'refresh'),
+      accessToken: this.generateToken(userId, 'access').token,
+      refreshToken: this.generateToken(userId, 'refresh').token,
     };
   }
 
@@ -42,17 +42,22 @@ export class TokenFactory {
   private generateToken(userId: string, type: 'access' | 'refresh'): Token {
     const payload: TokenPayload = {
       sub: userId,
-      type: type === 'access' ? JWT_CONFIG.ACCESS_TOKEN : JWT_CONFIG.REFRESH_TOKEN,
-      iss: JWT_CONFIG.ISSUER,
-      aud: JWT_CONFIG.AUDIENCE,
+      email: '', // Will be filled by the caller
+      role: '', // Will be filled by the caller
+      type:
+        type === 'access' ? JWT_CONFIG.ACCESS_TOKEN : JWT_CONFIG.REFRESH_TOKEN,
     };
 
     const secret = this.configService.get<string>(
-      type === 'access' ? JWT_CONFIG.ACCESS_SECRET_KEY : JWT_CONFIG.REFRESH_SECRET_KEY,
+      type === 'access'
+        ? JWT_CONFIG.ACCESS_SECRET_KEY
+        : JWT_CONFIG.REFRESH_SECRET_KEY,
     );
 
     const expiresIn = this.configService.get<string>(
-      type === 'access' ? JWT_CONFIG.ACCESS_EXPIRATION_KEY : JWT_CONFIG.REFRESH_EXPIRATION_KEY,
+      type === 'access'
+        ? JWT_CONFIG.ACCESS_EXPIRATION_KEY
+        : JWT_CONFIG.REFRESH_EXPIRATION_KEY,
       type === 'access'
         ? JWT_CONFIG.DEFAULT_ACCESS_EXPIRATION
         : JWT_CONFIG.DEFAULT_REFRESH_EXPIRATION,
@@ -67,7 +72,6 @@ export class TokenFactory {
 
     return {
       token,
-      expiresAt: this.calculateExpirationDate(expiresIn),
       expiresIn,
     };
   }

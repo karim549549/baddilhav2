@@ -36,7 +36,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     }
 
     // Get user from database
-    const user = await this.userService.findUserById(payload.sub);
+    const user = await this.userService.getUserById(payload.sub);
     if (!user) {
       throw new UnauthorizedException('User not found');
     }
@@ -44,7 +44,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     // Return user object that will be attached to request
     return {
       userId: user.id,
-      username: user.username,
+      fullName: user.fullName,
       user,
     };
   }

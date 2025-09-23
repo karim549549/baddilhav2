@@ -15,7 +15,10 @@ export interface JwtRefreshPayload {
 }
 
 @Injectable()
-export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
+export class JwtRefreshStrategy extends PassportStrategy(
+  Strategy,
+  'jwt-refresh',
+) {
   constructor(
     private readonly configService: ConfigService,
     private readonly userService: UserService,
@@ -36,7 +39,7 @@ export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh'
     }
 
     // Get user from database
-    const user = await this.userService.findUserById(payload.sub);
+    const user = await this.userService.getUserById(payload.sub);
     if (!user) {
       throw new UnauthorizedException('User not found');
     }
@@ -44,7 +47,7 @@ export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh'
     // Return user object that will be attached to request
     return {
       userId: user.id,
-      username: user.username,
+      fullName: user.fullName,
       user,
     };
   }

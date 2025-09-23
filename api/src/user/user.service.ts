@@ -1,270 +1,152 @@
-import { Injectable, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { RegisterUserDto } from './dto/register-user.dto';
-import { User } from '@prisma/client';
+import {
+  CreateUserDto,
+  UpdateUserDto,
+  UserResponseDto,
+  UsersResponseDto,
+} from './dto/user.dto';
+import { PaginationMeta } from '../common/interfaces/pagination.interface';
+import { formatUserResponse } from '../common/utils/format-user.util';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UserService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) {}
 
-  async createUser(createUserDto: CreateUserDto): Promise<User> {
-    const user = await this.prisma.user.create({
-      data: {
-        username: createUserDto.username,
-        displayName: createUserDto.displayName || createUserDto.username,
-        phone: createUserDto.phoneNumber,
-        avatar: createUserDto.avatarUrl,
-        bio: createUserDto.bio,
-        verificationStatus: createUserDto.verificationStatus || 'UNVERIFIED',
-        role: createUserDto.role || 'USER',
-        maxDistance: createUserDto.maxDistance || 50.0,
-        location:
-          createUserDto.latitude && createUserDto.longitude
-            ? {
-                create: {
-                  latitude: createUserDto.latitude,
-                  longitude: createUserDto.longitude,
-                  city: createUserDto.address || 'Unknown',
-                  country: 'Unknown',
-                },
-              }
-            : undefined,
-        preferences: createUserDto.interestedGames
-          ? {
-              create: {
-                gamesInterestedIn: createUserDto.interestedGames,
-              },
-            }
-          : undefined,
-        oauthAccounts:
-          createUserDto.oauthProvider && createUserDto.oauthProviderId
-            ? {
-                create: {
-                  provider: createUserDto.oauthProvider,
-                  providerAccountId: createUserDto.oauthProviderId,
-                },
-              }
-            : undefined,
-      },
-      include: {
-        location: true,
-        preferences: true,
-        oauthAccounts: true,
+  // Select object for user responses (excludes sensitive data)
+  private userSelect = {
+    id: true,
+    email: true,
+    fullName: true,
+    avatar: true,
+    bio: true,
+    phone: true,
+    isPhoneVerified: true,
+    verificationStatus: true,
+    role: true,
+    memberSince: true,
+    lastActive: true,
+  };
+
+  async createUser(createUserDto: CreateUserDto): Promise<UserResponseDto> {
+    const { fullName, email, password, phone, bio } = createUserDto;
+
+    // Check if user already exists
+    const existingUser = await this.prisma.user.findFirst({
+      where: {
+        OR: [{ email }, ...(phone ? [{ phone }] : [])],
       },
     });
-
-    return user;
-  }
-
-  async registerUser(registerUserDto: RegisterUserDto): Promise<User> {
-    // Check if user already exists
-    const existingUser = await this.findUserByUsernameOrEmailOrPhone(
-      registerUserDto.username,
-      registerUserDto.email,
-      registerUserDto.phoneNumber,
-    );
 
     if (existingUser) {
       throw new ConflictException(
-        'User already exists with this username, email, or phone number',
+        'User with this email or phone already exists',
       );
     }
 
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 12);
+
+    // Create user
     const user = await this.prisma.user.create({
       data: {
-        username: registerUserDto.username,
-        displayName: registerUserDto.displayName || registerUserDto.username,
-        phone: registerUserDto.phoneNumber,
-        verificationStatus: 'UNVERIFIED',
-        role: 'USER',
-        oauthAccounts:
-          registerUserDto.oauthProvider && registerUserDto.oauthProviderId
-            ? {
-                create: {
-                  provider: registerUserDto.oauthProvider,
-                  providerAccountId: registerUserDto.oauthProviderId,
-                },
-              }
-            : undefined,
+        fullName,
+        email,
+        phone,
+        bio,
+        hashedPassword,
       },
-      include: {
-        oauthAccounts: true,
-      },
+      select: this.userSelect,
     });
 
-    return user;
+    return formatUserResponse(user);
   }
 
-  async findUserById(id: string): Promise<User | null> {
-    return this.prisma.user.findUnique({
+  async getUserById(id: string): Promise<UserResponseDto> {
+    const user = await this.prisma.user.findUnique({
       where: { id },
-      include: {
-        location: true,
-        preferences: true,
-        oauthAccounts: true,
-      },
+      select: this.userSelect,
     });
-  }
 
-  async findUserByUsername(username: string): Promise<User | null> {
-    return this.prisma.user.findUnique({
-      where: { username },
-      include: {
-        location: true,
-        preferences: true,
-        oauthAccounts: true,
-      },
-    });
-  }
-
-  async findUserByEmail(email: string): Promise<User | null> {
-    return this.prisma.user.findFirst({
-      where: { email },
-      include: {
-        location: true,
-        preferences: true,
-        oauthAccounts: true,
-      },
-    });
-  }
-
-  async linkOAuthProvider(
-    userId: string,
-    oauthData: {
-      provider: string;
-      providerId: string;
-      accessToken: string;
-      refreshToken?: string;
-    },
-  ): Promise<void> {
-    await this.prisma.oAuthAccount.upsert({
-      where: {
-        provider_providerAccountId: {
-          provider: oauthData.provider as any,
-          providerAccountId: oauthData.providerId,
-        },
-      },
-      update: {
-        accessToken: oauthData.accessToken,
-        refreshToken: oauthData.refreshToken,
-      },
-      create: {
-        userId,
-        provider: oauthData.provider as any,
-        providerAccountId: oauthData.providerId,
-        accessToken: oauthData.accessToken,
-        refreshToken: oauthData.refreshToken,
-      },
-    });
-  }
-
-  async findUserByPhoneNumber(phoneNumber: string): Promise<User | null> {
-    return this.prisma.user.findUnique({
-      where: { phone: phoneNumber },
-      include: {
-        location: true,
-        preferences: true,
-        oauthAccounts: true,
-      },
-    });
-  }
-
-  async findUserByUsernameOrEmailOrPhone(
-    username?: string,
-    email?: string,
-    phoneNumber?: string,
-  ): Promise<User | null> {
-    if (!username && !phoneNumber) {
-      return null;
+    if (!user) {
+      throw new NotFoundException('User not found');
     }
 
-    return this.prisma.user.findFirst({
-      where: {
-        OR: [
-          ...(username ? [{ username }] : []),
-          ...(phoneNumber ? [{ phone: phoneNumber }] : []),
-        ],
-      },
-      include: {
-        location: true,
-        preferences: true,
-        oauthAccounts: true,
-      },
-    });
+    return formatUserResponse(user);
   }
 
-  async findUserByOAuthProvider(
-    provider: string,
-    providerId: string,
-  ): Promise<User | null> {
-    const oauthAccount = await this.prisma.oAuthAccount.findUnique({
-      where: {
-        provider_providerAccountId: {
-          provider: provider as any,
-          providerAccountId: providerId,
-        },
-      },
-      include: {
-        user: {
-          include: {
-            location: true,
-            preferences: true,
-            oauthAccounts: true,
-          },
-        },
-      },
+  async getUserByEmail(email: string): Promise<UserResponseDto> {
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+      select: this.userSelect,
     });
 
-    return oauthAccount?.user || null;
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return formatUserResponse(user);
   }
 
   async updateUser(
     id: string,
-    updateData: Partial<CreateUserDto>,
-  ): Promise<User> {
+    updateUserDto: UpdateUserDto,
+  ): Promise<UserResponseDto> {
+    const existingUser = await this.prisma.user.findUnique({ where: { id } });
+    if (!existingUser) {
+      throw new NotFoundException('User not found');
+    }
+
     const user = await this.prisma.user.update({
       where: { id },
-      data: {
-        username: updateData.username,
-        displayName: updateData.displayName,
-        phone: updateData.phoneNumber,
-        avatar: updateData.avatarUrl,
-        bio: updateData.bio,
-        maxDistance: updateData.maxDistance,
-      },
-      include: {
-        location: true,
-        preferences: true,
-        oauthAccounts: true,
-      },
+      data: { ...updateUserDto, lastActive: new Date() },
+      select: this.userSelect,
     });
 
-    return user;
+    return formatUserResponse(user);
   }
 
-  async deleteUser(id: string): Promise<void> {
-    await this.prisma.user.delete({
-      where: { id },
-    });
+  async deleteUser(id: string): Promise<{ message: string }> {
+    const existingUser = await this.prisma.user.findUnique({ where: { id } });
+    if (!existingUser) {
+      throw new NotFoundException('User not found');
+    }
+
+    await this.prisma.user.delete({ where: { id } });
+    return { message: 'User deleted successfully' };
   }
 
-  async getAllUsers(skip = 0, take = 10): Promise<User[]> {
-    return this.prisma.user.findMany({
-      skip,
-      take,
-      include: {
-        location: true,
-        preferences: true,
-        oauthAccounts: true,
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
-  }
+  async getAllUsers(page = 1, limit = 10): Promise<UsersResponseDto> {
+    const skip = (page - 1) * limit;
 
-  async getUsersCount(): Promise<number> {
-    return this.prisma.user.count();
+    const [users, total] = await Promise.all([
+      this.prisma.user.findMany({
+        skip,
+        take: limit,
+        select: this.userSelect,
+        orderBy: { memberSince: 'desc' },
+      }),
+      this.prisma.user.count(),
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+    const meta: PaginationMeta = {
+      page,
+      limit,
+      total,
+      totalPages,
+      hasNext: page < totalPages,
+      hasPrev: page > 1,
+    };
+
+    return {
+      data: users.map(formatUserResponse),
+      meta,
+    };
   }
 }

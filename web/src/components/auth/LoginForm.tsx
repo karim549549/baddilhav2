@@ -6,15 +6,33 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useAuthStore as useAuth } from "@/stores/auth.store";
+import { useState } from "react";
 
 export default function LoginForm() {
   const router = useRouter();
+  const { login, isLoading, error, clearError } = useAuth();
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Add actual authentication logic here
-    // For now, just redirect to dashboard
-    router.push("/dashboard");
+    clearError();
+
+    try {
+      await login(formData.email, formData.password);
+      router.push("/dashboard");
+    } catch (error) {
+      // Error is handled by the store
+      console.error("Login failed:", error);
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   return (
@@ -31,6 +49,13 @@ export default function LoginForm() {
           </p>
         </div>
 
+        {/* Error Display */}
+        {error && (
+          <div className="mb-4 p-3 bg-red-900/20 border border-red-500/30 rounded-xs text-red-400 text-sm">
+            {error}
+          </div>
+        )}
+
         {/* Form */}
         <form className="space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-2">
@@ -41,7 +66,10 @@ export default function LoginForm() {
               <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
               <Input
                 id="email"
+                name="email"
                 type="email"
+                value={formData.email}
+                onChange={handleInputChange}
                 placeholder="your@email.com"
                 required
                 className="pl-10 bg-black border-gray-700 text-white placeholder-gray-400 focus:border-purple-500 rounded-xs"
@@ -68,7 +96,10 @@ export default function LoginForm() {
               <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
               <Input
                 id="password"
+                name="password"
                 type="password"
+                value={formData.password}
+                onChange={handleInputChange}
                 placeholder="••••••••"
                 required
                 className="pl-10 bg-black border-gray-700 text-white placeholder-gray-400 focus:border-purple-500 rounded-xs"
@@ -79,9 +110,10 @@ export default function LoginForm() {
           {/* Submit Button */}
           <Button
             type="submit"
-            className="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-3 rounded-xs transition-colors flex items-center justify-center"
+            disabled={isLoading}
+            className="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-purple-600/50 disabled:cursor-not-allowed text-white font-medium py-3 rounded-xs transition-colors flex items-center justify-center"
           >
-            Login
+            {isLoading ? "Signing in..." : "Login"}
             <DoorOpen className="ml-2 h-5 w-5" />
           </Button>
 

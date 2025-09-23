@@ -2,12 +2,15 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CacheModule } from '@nestjs/cache-manager';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
-import { APP_GUARD } from '@nestjs/core';
-import { AuthModule } from './auth/auth.module';
+import { APP_GUARD, APP_PIPE } from '@nestjs/core';
 import { PrismaModule } from './prisma/prisma.module';
 import { UserModule } from './user/user.module';
+import { AdminModule } from './admin/admin.module';
+import { HealthModule } from './health/health.module';
+import { AuthModule } from './auth/auth.module';
 import { CACHE_CONFIG } from './libs/constants/cache.constants';
 import { RATE_LIMIT_CONFIG } from './libs/constants/rate-limit.constants';
+import { ValidationPipe } from './common/pipes/validation.pipe';
 
 @Module({
   imports: [
@@ -50,13 +53,19 @@ import { RATE_LIMIT_CONFIG } from './libs/constants/rate-limit.constants';
       inject: [ConfigService],
     }),
     PrismaModule, // Global module - must be imported here
+    HealthModule,
     AuthModule,
     UserModule,
+    AdminModule,
   ],
   providers: [
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
+    },
+    {
+      provide: APP_PIPE,
+      useClass: ValidationPipe,
     },
   ],
 })

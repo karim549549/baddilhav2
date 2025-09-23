@@ -79,9 +79,7 @@ enum NotificationType {
 
 enum Role {
   USER
-  MODERATOR
   ADMIN
-  SUPER_ADMIN
 }
 
 // ========================================
@@ -90,14 +88,14 @@ enum Role {
 
 model User {
   id                 String                 @id @default(cuid())
-  username           String                 @unique
-  email              String?                @unique
-  displayName        String
+  email              String                @unique
+  hashedPassword     String?
+  fullName        String
   phone              String?                @unique
   avatar             String?
   isPhoneVerified    Boolean                @default(false)
   verificationStatus UserVerificationStatus @default(UNVERIFIED)
-  role               Role                   @default(USER)
+  role               Role                   @default( ADMIN)
 
   // Location & Preferences
   location    Location?
@@ -108,6 +106,10 @@ model User {
   totalItems  Int      @default(0)
   memberSince DateTime @default(now())
   lastActive  DateTime @default(now())
+
+  // Password Reset
+  resetToken        String?
+  resetTokenExpiry  DateTime?
 
   // Settings
   preferences UserPreferences?
