@@ -1,10 +1,51 @@
+"use client";
+
 import { DoorOpen, Mail, Lock, User, Github } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useAuthStore as useAuth } from "@/stores/auth.store";
+import { useState } from "react";
 
 export default function SignupForm() {
+  const router = useRouter();
+  const { signup, isLoading, error, clearError } = useAuth();
+  const [formData, setFormData] = useState({
+    fullName: "",
+    email: "",
+    password: "",
+    phone: "",
+    bio: "",
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    clearError();
+
+    try {
+      await signup(
+        formData.fullName,
+        formData.email,
+        formData.password,
+        formData.phone || undefined,
+        formData.bio || undefined
+      );
+      router.push("/dashboard");
+    } catch (error) {
+      // Error is handled by the store
+      console.error("Signup failed:", error);
+    }
+  };
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
   return (
     <div className="h-full flex items-center justify-center p-8">
       <div className="w-full max-w-md">
@@ -19,17 +60,30 @@ export default function SignupForm() {
           </p>
         </div>
 
+        {/* Error Display */}
+        {error && (
+          <div className="mb-4 p-3 bg-red-900/20 border border-red-500/30 rounded-xs text-red-400 text-sm">
+            {error}
+          </div>
+        )}
+
         {/* Form */}
-        <form className="space-y-6">
+        <form className="space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-2">
-            <Label htmlFor="name" className="text-white text-sm font-medium">
+            <Label
+              htmlFor="fullName"
+              className="text-white text-sm font-medium"
+            >
               Full Name <span className="text-red-500">*</span>
             </Label>
             <div className="relative">
               <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
               <Input
-                id="name"
+                id="fullName"
+                name="fullName"
                 type="text"
+                value={formData.fullName}
+                onChange={handleInputChange}
                 placeholder="Your Full Name"
                 required
                 className="pl-10 bg-black border-gray-700 text-white placeholder-gray-400 focus:border-purple-500 rounded-xs"
@@ -45,7 +99,10 @@ export default function SignupForm() {
               <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
               <Input
                 id="email"
+                name="email"
                 type="email"
+                value={formData.email}
+                onChange={handleInputChange}
                 placeholder="your@email.com"
                 required
                 className="pl-10 bg-black border-gray-700 text-white placeholder-gray-400 focus:border-purple-500 rounded-xs"
@@ -64,7 +121,10 @@ export default function SignupForm() {
               <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
               <Input
                 id="password"
+                name="password"
                 type="password"
+                value={formData.password}
+                onChange={handleInputChange}
                 placeholder="••••••••"
                 required
                 className="pl-10 bg-black border-gray-700 text-white placeholder-gray-400 focus:border-purple-500 rounded-xs"
@@ -72,12 +132,48 @@ export default function SignupForm() {
             </div>
           </div>
 
+          <div className="space-y-2">
+            <Label htmlFor="phone" className="text-white text-sm font-medium">
+              Phone Number <span className="text-gray-400">(optional)</span>
+            </Label>
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Input
+                id="phone"
+                name="phone"
+                type="tel"
+                value={formData.phone}
+                onChange={handleInputChange}
+                placeholder="+1234567890"
+                className="pl-10 bg-black border-gray-700 text-white placeholder-gray-400 focus:border-purple-500 rounded-xs"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="bio" className="text-white text-sm font-medium">
+              Bio <span className="text-gray-400">(optional)</span>
+            </Label>
+            <div className="relative">
+              <textarea
+                id="bio"
+                name="bio"
+                value={formData.bio}
+                onChange={handleInputChange}
+                placeholder="Tell us about yourself..."
+                rows={3}
+                className="w-full px-3 py-2 bg-black border border-gray-700 text-white placeholder-gray-400 focus:border-purple-500 rounded-xs resize-none"
+              />
+            </div>
+          </div>
+
           {/* Submit Button */}
           <Button
             type="submit"
-            className="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-3 rounded-xs transition-colors flex items-center justify-center"
+            disabled={isLoading}
+            className="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-purple-600/50 disabled:cursor-not-allowed text-white font-medium py-3 rounded-xs transition-colors flex items-center justify-center"
           >
-            Sign Up
+            {isLoading ? "Creating account..." : "Sign Up"}
             <DoorOpen className="ml-2 h-5 w-5" />
           </Button>
 
