@@ -8,10 +8,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuthStore as useAuth } from "@/stores/auth.store";
 import { useState } from "react";
+import { testApiConnection, testSignupEndpoint } from "@/utils/test-api";
 
 export default function SignupForm() {
   const router = useRouter();
-  const { signup, isLoading, error, clearError } = useAuth();
+  const { signup, isLoading, error, clearError, setLoading } = useAuth();
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -19,12 +20,36 @@ export default function SignupForm() {
     phone: "",
     bio: "",
   });
+  const [clientError, setClientError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     clearError();
+    setClientError("");
+
+    // Basic client-side validation
+    if (!formData.fullName.trim()) {
+      setClientError("Please enter your full name.");
+      return;
+    }
+    if (!formData.email.trim()) {
+      setClientError("Please enter your email address.");
+      return;
+    }
+    if (!formData.password || formData.password.length < 8) {
+      setClientError("Password must be at least 8 characters long.");
+      return;
+    }
 
     try {
+      console.log("Attempting signup with data:", {
+        fullName: formData.fullName,
+        email: formData.email,
+        password: "***",
+        phone: formData.phone,
+        bio: formData.bio,
+      });
+
       await signup(
         formData.fullName,
         formData.email,
@@ -46,6 +71,15 @@ export default function SignupForm() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleTestApi = async () => {
+    console.log("🔍 Testing API connection...");
+    const isConnected = await testApiConnection();
+    if (isConnected) {
+      console.log("🔍 Testing signup endpoint...");
+      await testSignupEndpoint();
+    }
+  };
+
   return (
     <div className="h-full flex items-center justify-center p-8">
       <div className="w-full max-w-md">
@@ -61,9 +95,9 @@ export default function SignupForm() {
         </div>
 
         {/* Error Display */}
-        {error && (
+        {(error || clientError) && (
           <div className="mb-4 p-3 bg-red-900/20 border border-red-500/30 rounded-xs text-red-400 text-sm">
-            {error}
+            {error || clientError}
           </div>
         )}
 
@@ -224,6 +258,19 @@ export default function SignupForm() {
             Continue with GitHub
           </Button>
         </form>
+
+        {/* Debug Button - Remove in production */}
+        <div className="mt-4 text-center">
+          <Button
+            type="button"
+            onClick={handleTestApi}
+            variant="outline"
+            size="sm"
+            className="border-gray-600 text-gray-400 hover:bg-gray-800 text-xs"
+          >
+            🔍 Test API Connection
+          </Button>
+        </div>
 
         {/* Toggle to Login */}
         <div className="mt-8 text-center">

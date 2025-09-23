@@ -91,12 +91,27 @@ const handleAuthError = (
         } else if (message.includes("422") || message.includes("validation")) {
           errorMessage =
             "Please check your input. Some fields may be invalid or missing.";
+        } else if (message.includes("400") || message.includes("bad request")) {
+          errorMessage =
+            "Invalid information provided. Please check all fields and try again.";
         } else if (message.includes("network") || message.includes("fetch")) {
           errorMessage =
             "Unable to connect to the server. Please check your internet connection.";
-        } else {
+        } else if (message.includes("timeout")) {
+          errorMessage = "Request timed out. Please try again.";
+        } else if (message.includes("password")) {
           errorMessage =
-            "Signup failed. Please check your information and try again.";
+            "Password must be at least 8 characters with uppercase, lowercase, number, and special character.";
+        } else if (message.includes("email")) {
+          errorMessage = "Please enter a valid email address.";
+        } else if (message.includes("name") || message.includes("fullname")) {
+          errorMessage = "Please enter a valid full name.";
+        } else {
+          // Show the actual error message if it's user-friendly, otherwise show generic message
+          errorMessage =
+            error.message.includes("HTTP") || error.message.includes("Error:")
+              ? "Signup failed. Please check your information and try again."
+              : error.message;
         }
         break;
 
@@ -166,9 +181,13 @@ export const useAuthStore = create<AuthState>()(
             const { accessToken, refreshToken, user: authUser } = response.data;
             set(handleAuthSuccess(authUser, accessToken, refreshToken));
           } else {
+            // Log the full error for debugging
+            console.error("Signup API Error:", response.error);
             throw new Error(response.error?.message || "Signup failed");
           }
         } catch (error) {
+          // Log the full error for debugging
+          console.error("Signup Error Details:", error);
           set(handleAuthError(error, "signup"));
           throw error;
         }

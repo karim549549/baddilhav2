@@ -3,7 +3,7 @@ import { ApiController } from '../common/decorators/api-controller.decorator';
 import { ApiEndpoint } from '../common/decorators/api-endpoint.decorator';
 
 @ApiController('Health')
-@Controller()
+@Controller('health')
 export class HealthController {
   @Get()
   @ApiEndpoint({
@@ -26,7 +26,7 @@ export class HealthController {
     };
   }
 
-  @Get('health')
+  @Get('detailed')
   @ApiEndpoint({
     summary: 'Detailed Health Check',
     method: 'GET',
@@ -48,8 +48,9 @@ export class HealthController {
       environment: process.env.NODE_ENV || 'development',
       endpoints: {
         docs: '/api/docs',
-        users: '/users',
-        admin: '/admin',
+        users: '/api/users',
+        admin: '/api/admin',
+        auth: '/api/auth',
       },
     };
   }
