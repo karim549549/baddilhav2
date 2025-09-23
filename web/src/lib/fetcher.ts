@@ -255,49 +255,95 @@ class Fetcher {
   private handleError(error: AppError): ErrorHandlerResult {
     this.logError(error);
 
-    // Simple error handling based on type
+    // User-friendly error messages based on type and status
     switch (error.type) {
       case ErrorType.NETWORK_ERROR:
         return {
           handled: true,
           userMessage:
-            "Network connection failed. Please check your internet connection.",
+            "Unable to connect to the server. Please check your internet connection and try again.",
           shouldRetry: true,
           retryAfter: 2000,
         };
 
       case ErrorType.API_ERROR:
         const apiError = error as ApiError;
-        if (apiError.status === 401) {
-          return {
-            handled: true,
-            userMessage: "Session expired. Please log in again.",
-            recoveryAction: { type: "logout" },
-          };
+
+        // Handle specific HTTP status codes with user-friendly messages
+        switch (apiError.status) {
+          case 400:
+            return {
+              handled: true,
+              userMessage:
+                "Invalid request. Please check your input and try again.",
+            };
+          case 401:
+            return {
+              handled: true,
+              userMessage: "Your session has expired. Please log in again.",
+              recoveryAction: { type: "logout" },
+            };
+          case 403:
+            return {
+              handled: true,
+              userMessage: "You don't have permission to perform this action.",
+            };
+          case 404:
+            return {
+              handled: true,
+              userMessage:
+                "The requested resource was not found. Please check the URL or try again later.",
+            };
+          case 409:
+            return {
+              handled: true,
+              userMessage:
+                "This email is already registered. Please use a different email or try logging in.",
+            };
+          case 422:
+            return {
+              handled: true,
+              userMessage:
+                "Please check your input. Some fields may be invalid or missing.",
+            };
+          case 429:
+            return {
+              handled: true,
+              userMessage:
+                "Too many requests. Please wait a moment before trying again.",
+              shouldRetry: true,
+              retryAfter: 60000,
+            };
+          case 500:
+            return {
+              handled: true,
+              userMessage:
+                "Server error. Our team has been notified. Please try again later.",
+              shouldRetry: true,
+              retryAfter: 5000,
+            };
+          case 502:
+          case 503:
+          case 504:
+            return {
+              handled: true,
+              userMessage:
+                "Service temporarily unavailable. Please try again in a few minutes.",
+              shouldRetry: true,
+              retryAfter: 10000,
+            };
+          default:
+            return {
+              handled: true,
+              userMessage: "Something went wrong. Please try again later.",
+            };
         }
-        if (apiError.status === 403) {
-          return {
-            handled: true,
-            userMessage: "You do not have permission to perform this action.",
-          };
-        }
-        if (apiError.status >= 500) {
-          return {
-            handled: true,
-            userMessage: "Server error. Please try again later.",
-            shouldRetry: true,
-            retryAfter: 5000,
-          };
-        }
-        return {
-          handled: true,
-          userMessage: error.message,
-        };
 
       case ErrorType.AUTH_ERROR:
         return {
           handled: true,
-          userMessage: "Authentication failed. Please check your credentials.",
+          userMessage:
+            "Invalid email or password. Please check your credentials and try again.",
           recoveryAction: { type: "redirect", payload: "/auth/login" },
         };
 
@@ -310,15 +356,25 @@ class Fetcher {
       case ErrorType.RATE_LIMIT_EXCEEDED:
         return {
           handled: true,
-          userMessage: "Too many requests. Please wait a moment and try again.",
+          userMessage:
+            "Too many attempts. Please wait a moment before trying again.",
           shouldRetry: true,
           retryAfter: 60000,
+        };
+
+      case ErrorType.TIMEOUT_ERROR:
+        return {
+          handled: true,
+          userMessage:
+            "Request timed out. Please check your connection and try again.",
+          shouldRetry: true,
+          retryAfter: 3000,
         };
 
       default:
         return {
           handled: false,
-          userMessage: "An unexpected error occurred",
+          userMessage: "An unexpected error occurred. Please try again later.",
         };
     }
   }
@@ -327,7 +383,7 @@ class Fetcher {
   private async retryRequest<T>(
     endpoint: string,
     options: RequestOptions,
-    lastError: AppError
+    _lastError: AppError
   ): Promise<FetcherResponse<T>> {
     const retries = (options.retries || this.config.retries) - 1;
     const delay =

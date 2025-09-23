@@ -57,9 +57,59 @@ const handleAuthSuccess = (
   };
 };
 
-// Helper function to handle auth error
-const handleAuthError = (error: unknown, defaultMessage: string) => {
-  const errorMessage = error instanceof Error ? error.message : defaultMessage;
+// Helper function to handle auth error with context-specific messages
+const handleAuthError = (
+  error: unknown,
+  context: "login" | "signup" | "refresh" | "general"
+) => {
+  let errorMessage = "An unexpected error occurred. Please try again.";
+
+  if (error instanceof Error) {
+    const message = error.message.toLowerCase();
+
+    // Context-specific error messages
+    switch (context) {
+      case "login":
+        if (message.includes("401") || message.includes("unauthorized")) {
+          errorMessage =
+            "Invalid email or password. Please check your credentials.";
+        } else if (message.includes("network") || message.includes("fetch")) {
+          errorMessage =
+            "Unable to connect to the server. Please check your internet connection.";
+        } else if (message.includes("timeout")) {
+          errorMessage = "Request timed out. Please try again.";
+        } else {
+          errorMessage =
+            "Login failed. Please check your credentials and try again.";
+        }
+        break;
+
+      case "signup":
+        if (message.includes("409") || message.includes("conflict")) {
+          errorMessage =
+            "This email is already registered. Please use a different email or try logging in.";
+        } else if (message.includes("422") || message.includes("validation")) {
+          errorMessage =
+            "Please check your input. Some fields may be invalid or missing.";
+        } else if (message.includes("network") || message.includes("fetch")) {
+          errorMessage =
+            "Unable to connect to the server. Please check your internet connection.";
+        } else {
+          errorMessage =
+            "Signup failed. Please check your information and try again.";
+        }
+        break;
+
+      case "refresh":
+        errorMessage = "Session expired. Please log in again.";
+        break;
+
+      default:
+        errorMessage =
+          error.message || "An unexpected error occurred. Please try again.";
+    }
+  }
+
   return {
     user: null,
     isAuthenticated: false,
@@ -90,7 +140,7 @@ export const useAuthStore = create<AuthState>()(
             throw new Error(response.error?.message || "Login failed");
           }
         } catch (error) {
-          set(handleAuthError(error, "Login failed"));
+          set(handleAuthError(error, "login"));
           throw error;
         }
       },
@@ -119,7 +169,7 @@ export const useAuthStore = create<AuthState>()(
             throw new Error(response.error?.message || "Signup failed");
           }
         } catch (error) {
-          set(handleAuthError(error, "Signup failed"));
+          set(handleAuthError(error, "signup"));
           throw error;
         }
       },
@@ -172,7 +222,7 @@ export const useAuthStore = create<AuthState>()(
             localStorage.removeItem("accessToken");
             localStorage.removeItem("refreshToken");
           }
-          set(handleAuthError(error, "Token refresh failed"));
+          set(handleAuthError(error, "refresh"));
           throw error;
         }
       },
@@ -213,11 +263,7 @@ export const initializeAuth = async () => {
     // Clear invalid tokens
     localStorage.removeItem("accessToken");
     localStorage.removeItem("refreshToken");
-    useAuthStore.setState({
-      user: null,
-      isAuthenticated: false,
-      error: null,
-    });
+    useAuthStore.setState(handleAuthError(error, "general"));
   } finally {
     setLoading(false);
   }
