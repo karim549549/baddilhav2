@@ -46,9 +46,6 @@ async function bootstrap() {
     }),
   );
 
-  // Set global API prefix
-  app.setGlobalPrefix('api');
-
   // Setup Swagger documentation
   setupSwagger(app);
 

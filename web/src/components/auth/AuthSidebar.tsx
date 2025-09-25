@@ -1,25 +1,6 @@
-import { Zap, Users, Plug, Settings } from "lucide-react";
 import AuthLogo from "./AuthLogo";
 
 export default function AuthSidebar() {
-  const features = [
-    {
-      number: 1,
-      title: "Enter credentials",
-    },
-    {
-      number: 2,
-      title: "Verify account",
-    },
-    {
-      number: 3,
-      title: "Access dashboard",
-    },
-    {
-      number: 4,
-      title: "Manage system",
-    },
-  ];
 
   return (
     <div className="h-full p-8 flex flex-col">

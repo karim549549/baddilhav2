@@ -2,11 +2,13 @@
 export const env = {
   // API Configuration
   API_URL:
-    process.env.NEXT_PUBLIC_API_URL || "https://baddilhav2.onrender.com/api",
+    process.env.NEXT_PUBLIC_API_URL ||
+    "http://localhost:4000" ||
+    "https://baddilhav2.onrender.com/",
 
   // App Configuration
   APP_NAME: process.env.NEXT_PUBLIC_APP_NAME || "Baddilha",
-  APP_URL: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+  APP_URL: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:4000",
 
   // Environment
   NODE_ENV: process.env.NODE_ENV || "development",

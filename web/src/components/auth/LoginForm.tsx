@@ -8,18 +8,35 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuthStore as useAuth } from "@/stores/auth.store";
 import { useState } from "react";
+import { loginSchema } from "@/schemas/auth.schema";
+import type { LoginFormData } from "@/types/auth.types";
 
 export default function LoginForm() {
   const router = useRouter();
   const { login, isLoading, error, clearError } = useAuth();
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<LoginFormData>({
     email: "",
     password: "",
   });
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     clearError();
+    setFieldErrors({});
+
+    // Validate with Zod
+    const validation = loginSchema.safeParse(formData);
+    if (!validation.success) {
+      const errors: Record<string, string> = {};
+      validation.error.issues.forEach((issue) => {
+        if (issue.path[0]) {
+          errors[issue.path[0] as string] = issue.message;
+        }
+      });
+      setFieldErrors(errors);
+      return;
+    }
 
     try {
       await login(formData.email, formData.password);
@@ -33,6 +50,11 @@ export default function LoginForm() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+
+    // Clear field error when user starts typing
+    if (fieldErrors[name]) {
+      setFieldErrors((prev) => ({ ...prev, [name]: "" }));
+    }
   };
 
   return (
@@ -72,9 +94,14 @@ export default function LoginForm() {
                 onChange={handleInputChange}
                 placeholder="your@email.com"
                 required
-                className="pl-10 bg-black border-gray-700 text-white placeholder-gray-400 focus:border-purple-500 rounded-xs"
+                className={`pl-10 bg-black border-gray-700 text-white placeholder-gray-400 focus:border-purple-500 rounded-xs ${
+                  fieldErrors.email ? "border-red-500" : ""
+                }`}
               />
             </div>
+            {fieldErrors.email && (
+              <p className="text-red-400 text-xs mt-1">{fieldErrors.email}</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -102,9 +129,16 @@ export default function LoginForm() {
                 onChange={handleInputChange}
                 placeholder="••••••••"
                 required
-                className="pl-10 bg-black border-gray-700 text-white placeholder-gray-400 focus:border-purple-500 rounded-xs"
+                className={`pl-10 bg-black border-gray-700 text-white placeholder-gray-400 focus:border-purple-500 rounded-xs ${
+                  fieldErrors.password ? "border-red-500" : ""
+                }`}
               />
             </div>
+            {fieldErrors.password && (
+              <p className="text-red-400 text-xs mt-1">
+                {fieldErrors.password}
+              </p>
+            )}
           </div>
 
           {/* Submit Button */}

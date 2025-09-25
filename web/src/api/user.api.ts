@@ -1,57 +1,29 @@
-// User API Service
-import { fetcher } from "@/lib/fetcher";
-import { MessageResponse, User } from "./auth.api"; // Import from auth.api to avoid duplication
+// User API - reset placeholders
+import type { MessageResponse } from "@/types/auth.types";
+import type {
+  User,
+  UpdateUserRequest,
+  UsersResponse,
+} from "@/types/user.types";
 
-// User Types
-
-export interface UpdateUserRequest {
-  fullName?: string;
-  bio?: string;
-  phone?: string;
-  avatar?: string;
-}
-
-export interface UsersResponse {
-  data: User[];
-  meta: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-    hasNext: boolean;
-    hasPrev: boolean;
-  };
-}
-
-// User API Service
 export const userApi = {
-  // Get all users (with pagination)
-  async getUsers(page = 1, limit = 10) {
-    return fetcher.get<UsersResponse>(`/users?page=${page}&limit=${limit}`);
+  async getUsers(_page = 1, _limit = 10): Promise<UsersResponse> {
+    throw new Error("API client not implemented");
   },
-
-  // Get user by ID
-  async getUserById(id: string) {
-    return fetcher.get<User>(`/users/${id}`);
+  async getUserById(_id: string): Promise<User> {
+    throw new Error("API client not implemented");
   },
-
-  // Update user profile
-  async updateUser(id: string, data: UpdateUserRequest) {
-    return fetcher.put<User>(`/users/${id}`, data);
+  async updateUser(_id: string, _data: UpdateUserRequest): Promise<User> {
+    throw new Error("API client not implemented");
   },
-
-  // Delete user
-  async deleteUser(id: string) {
-    return fetcher.delete<MessageResponse>(`/users/${id}`);
+  async deleteUser(_id: string): Promise<MessageResponse> {
+    throw new Error("API client not implemented");
   },
-
-  // Update current user profile
-  async updateMyProfile(data: UpdateUserRequest) {
-    return fetcher.put<User>("/users/profile", data);
+  async updateMyProfile(_data: UpdateUserRequest): Promise<User> {
+    throw new Error("API client not implemented");
   },
 };
 
-// Export individual functions for convenience
 export const {
   getUsers,
   getUserById,

@@ -8,55 +8,42 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuthStore as useAuth } from "@/stores/auth.store";
 import { useState } from "react";
-import { testApiConnection, testSignupEndpoint } from "@/utils/test-api";
+import { signupSchema } from "@/schemas/auth.schema";
+import type { SignupFormData } from "@/types/auth.types";
 
 export default function SignupForm() {
   const router = useRouter();
-  const { signup, isLoading, error, clearError, setLoading } = useAuth();
-  const [formData, setFormData] = useState({
+  const { signup, isLoading, error, clearError } = useAuth();
+  const [formData, setFormData] = useState<SignupFormData>({
     fullName: "",
     email: "",
     password: "",
-    phone: "",
-    bio: "",
   });
   const [clientError, setClientError] = useState("");
+  const [passwordStrength, setPasswordStrength] = useState(0);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     clearError();
     setClientError("");
+    setFieldErrors({});
 
-    // Basic client-side validation
-    if (!formData.fullName.trim()) {
-      setClientError("Please enter your full name.");
-      return;
-    }
-    if (!formData.email.trim()) {
-      setClientError("Please enter your email address.");
-      return;
-    }
-    if (!formData.password || formData.password.length < 8) {
-      setClientError("Password must be at least 8 characters long.");
+    // Validate with Zod
+    const validation = signupSchema.safeParse(formData);
+    if (!validation.success) {
+      const errors: Record<string, string> = {};
+      validation.error.issues.forEach((issue) => {
+        if (issue.path[0]) {
+          errors[issue.path[0] as string] = issue.message;
+        }
+      });
+      setFieldErrors(errors);
       return;
     }
 
     try {
-      console.log("Attempting signup with data:", {
-        fullName: formData.fullName,
-        email: formData.email,
-        password: "***",
-        phone: formData.phone,
-        bio: formData.bio,
-      });
-
-      await signup(
-        formData.fullName,
-        formData.email,
-        formData.password,
-        formData.phone || undefined,
-        formData.bio || undefined
-      );
+      await signup(formData.fullName, formData.email, formData.password);
       router.push("/dashboard");
     } catch (error) {
       // Error is handled by the store
@@ -64,19 +51,24 @@ export default function SignupForm() {
     }
   };
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-  };
 
-  const handleTestApi = async () => {
-    console.log("🔍 Testing API connection...");
-    const isConnected = await testApiConnection();
-    if (isConnected) {
-      console.log("🔍 Testing signup endpoint...");
-      await testSignupEndpoint();
+    // Clear field error when user starts typing
+    if (fieldErrors[name]) {
+      setFieldErrors((prev) => ({ ...prev, [name]: "" }));
+    }
+
+    // Calculate password strength
+    if (name === "password") {
+      let strength = 0;
+      if (value.length >= 8) strength++;
+      if (/[a-z]/.test(value)) strength++;
+      if (/[A-Z]/.test(value)) strength++;
+      if (/\d/.test(value)) strength++;
+      if (/[@$!%*?&]/.test(value)) strength++;
+      setPasswordStrength(strength);
     }
   };
 
@@ -120,9 +112,16 @@ export default function SignupForm() {
                 onChange={handleInputChange}
                 placeholder="Your Full Name"
                 required
-                className="pl-10 bg-black border-gray-700 text-white placeholder-gray-400 focus:border-purple-500 rounded-xs"
+                className={`pl-10 bg-black border-gray-700 text-white placeholder-gray-400 focus:border-purple-500 rounded-xs ${
+                  fieldErrors.fullName ? "border-red-500" : ""
+                }`}
               />
             </div>
+            {fieldErrors.fullName && (
+              <p className="text-red-400 text-xs mt-1">
+                {fieldErrors.fullName}
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -139,9 +138,14 @@ export default function SignupForm() {
                 onChange={handleInputChange}
                 placeholder="your@email.com"
                 required
-                className="pl-10 bg-black border-gray-700 text-white placeholder-gray-400 focus:border-purple-500 rounded-xs"
+                className={`pl-10 bg-black border-gray-700 text-white placeholder-gray-400 focus:border-purple-500 rounded-xs ${
+                  fieldErrors.email ? "border-red-500" : ""
+                }`}
               />
             </div>
+            {fieldErrors.email && (
+              <p className="text-red-400 text-xs mt-1">{fieldErrors.email}</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -161,44 +165,51 @@ export default function SignupForm() {
                 onChange={handleInputChange}
                 placeholder="••••••••"
                 required
-                className="pl-10 bg-black border-gray-700 text-white placeholder-gray-400 focus:border-purple-500 rounded-xs"
+                className={`pl-10 bg-black border-gray-700 text-white placeholder-gray-400 focus:border-purple-500 rounded-xs ${
+                  fieldErrors.password ? "border-red-500" : ""
+                }`}
               />
             </div>
-          </div>
+            {fieldErrors.password && (
+              <p className="text-red-400 text-xs mt-1">
+                {fieldErrors.password}
+              </p>
+            )}
 
-          <div className="space-y-2">
-            <Label htmlFor="phone" className="text-white text-sm font-medium">
-              Phone Number <span className="text-gray-400">(optional)</span>
-            </Label>
-            <div className="relative">
-              <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <Input
-                id="phone"
-                name="phone"
-                type="tel"
-                value={formData.phone}
-                onChange={handleInputChange}
-                placeholder="+1234567890"
-                className="pl-10 bg-black border-gray-700 text-white placeholder-gray-400 focus:border-purple-500 rounded-xs"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="bio" className="text-white text-sm font-medium">
-              Bio <span className="text-gray-400">(optional)</span>
-            </Label>
-            <div className="relative">
-              <textarea
-                id="bio"
-                name="bio"
-                value={formData.bio}
-                onChange={handleInputChange}
-                placeholder="Tell us about yourself..."
-                rows={3}
-                className="w-full px-3 py-2 bg-black border border-gray-700 text-white placeholder-gray-400 focus:border-purple-500 rounded-xs resize-none"
-              />
-            </div>
+            {/* Password Strength Indicator */}
+            {formData.password && (
+              <div className="mt-2">
+                <div className="flex items-center space-x-2 mb-1">
+                  <div className="flex space-x-1">
+                    {[1, 2, 3, 4, 5].map((level) => (
+                      <div
+                        key={level}
+                        className={`h-1 w-8 rounded ${
+                          level <= passwordStrength
+                            ? passwordStrength <= 2
+                              ? "bg-red-500"
+                              : passwordStrength <= 3
+                              ? "bg-yellow-500"
+                              : "bg-green-500"
+                            : "bg-gray-600"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <span className="text-xs text-gray-400">
+                    {passwordStrength <= 2
+                      ? "Weak"
+                      : passwordStrength <= 3
+                      ? "Medium"
+                      : "Strong"}
+                  </span>
+                </div>
+                <p className="text-xs text-gray-500">
+                  Password must contain: uppercase, lowercase, number, and
+                  special character (@$!%*?&)
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Submit Button */}
@@ -258,19 +269,6 @@ export default function SignupForm() {
             Continue with GitHub
           </Button>
         </form>
-
-        {/* Debug Button - Remove in production */}
-        <div className="mt-4 text-center">
-          <Button
-            type="button"
-            onClick={handleTestApi}
-            variant="outline"
-            size="sm"
-            className="border-gray-600 text-gray-400 hover:bg-gray-800 text-xs"
-          >
-            🔍 Test API Connection
-          </Button>
-        </div>
 
         {/* Toggle to Login */}
         <div className="mt-8 text-center">

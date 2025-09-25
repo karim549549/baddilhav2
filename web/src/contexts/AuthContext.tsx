@@ -1,17 +1,11 @@
 // Auth Context using Zustand Store
-import React, { useEffect, ReactNode } from "react";
-import { initializeAuth } from "@/stores/auth.store";
+import React, { ReactNode } from "react";
 
 interface AuthProviderProps {
   children: ReactNode;
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  // Initialize auth state on mount
-  useEffect(() => {
-    initializeAuth();
-  }, []);
-
   return <>{children}</>;
 };
 

@@ -52,7 +52,10 @@ export class AuthController {
     ],
   })
   async login(@Body() loginDto: LoginDto): Promise<AuthResponseDto> {
-    return this.authService.login(loginDto);
+    console.log('AuthController login called with:', loginDto);
+    const result = await this.authService.login(loginDto);
+    console.log('AuthController login result:', result);
+    return result;
   }
 
   @Post('refresh')
